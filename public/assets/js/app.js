@@ -179,16 +179,28 @@
         const modBadge = this.escapeHtml(modLabel);
         const recipeTypeLabel = this.escapeHtml(recipeType);
         const formatBadge = formatLabel ? this.escapeHtml(formatLabel) : '';
+        const fullRecipeId = this.escapeHtml(recipe.name);
+        const recipeDescription = this.getRecipeDescription(recipe);
 
         card.innerHTML = `
             <div class="recipe-header">
-                <h3>
-                    ${recipeTitle}
-                    <span class="recipe-mod">${modBadge}</span>
-                </h3>
+                <div class="recipe-title-section">
+                    <h3>${recipeTitle}</h3>
+                    <div class="recipe-id-full">Recipe ID: <code>${fullRecipeId}</code></div>
+                    ${recipeDescription ? `<div class="recipe-description">${this.escapeHtml(recipeDescription)}</div>` : ''}
+                    <span class="recipe-mod-label">From: <span class="recipe-mod">${modBadge}</span></span>
+                </div>
                 <div class="recipe-meta">
-                    <span class="recipe-type">${recipeTypeLabel}</span>
-                    ${formatBadge ? `<span class="format-badge">${formatBadge}</span>` : ''}
+                    <div class="recipe-type-section">
+                        <span class="recipe-type-label">Recipe Type</span>
+                        <span class="recipe-type">${recipeTypeLabel}</span>
+                    </div>
+                    ${formatBadge ? `
+                        <div class="format-section">
+                            <span class="format-label">Implementation</span>
+                            <span class="format-badge">${formatBadge}</span>
+                        </div>
+                    ` : ''}
                 </div>
             </div>
             <div class="recipe-content">
@@ -473,6 +485,11 @@
         const hasInputs = recipe.inputs.items.length > 0 || recipe.inputs.fluids.length > 0;
         const hasOutputs = recipe.outputs.items.length > 0 || recipe.outputs.fluids.length > 0;
 
+        // Special handling for dynamic JSON recipes with no traditional inputs/outputs
+        if (!hasInputs && !hasOutputs && recipe.format === 'addJsonRecipe') {
+            return this.renderDynamicRecipe(recipe);
+        }
+
         const inputsMarkup = `
             <div class="machine-column">
                 <h4>Inputs</h4>
@@ -497,6 +514,52 @@
                 ${this.renderRecipeProperties(recipe)}
             </div>
         `;
+    }
+
+    renderDynamicRecipe(recipe) {
+        const recipeData = recipe.data || {};
+        const hasSpecialTools = recipeData.copy_tool || recipeData.tool;
+
+        return `
+            <div class="dynamic-recipe-board">
+                <div class="dynamic-recipe-info">
+                    <div class="dynamic-recipe-type">
+                        <strong>Dynamic Recipe Type:</strong>
+                        <code>${this.escapeHtml(recipeData.type || 'Unknown')}</code>
+                    </div>
+                    ${recipeData.category ? `
+                        <div class="dynamic-recipe-category">
+                            <strong>Category:</strong> ${this.escapeHtml(recipeData.category)}
+                        </div>
+                    ` : ''}
+                    ${hasSpecialTools ? `
+                        <div class="dynamic-recipe-tools">
+                            <strong>Special Tools:</strong>
+                            ${this.renderSpecialTools(recipeData)}
+                        </div>
+                    ` : ''}
+                </div>
+                <div class="dynamic-recipe-explanation">
+                    <p><em>This is a dynamic recipe that works programmatically. The actual ingredients and outputs are determined by the mod's game logic when you use it in-game.</em></p>
+                </div>
+            </div>
+        `;
+    }
+
+    renderSpecialTools(recipeData) {
+        const tools = [];
+
+        if (recipeData.copy_tool && recipeData.copy_tool.item) {
+            const toolName = this.getCraftingItemName(recipeData.copy_tool.item);
+            tools.push(`<span class="tool-item">${this.escapeHtml(toolName)}</span>`);
+        }
+
+        if (recipeData.tool) {
+            const toolName = this.getCraftingItemName(recipeData.tool);
+            tools.push(`<span class="tool-item">${this.escapeHtml(toolName)}</span>`);
+        }
+
+        return tools.join(', ');
     }
 
     renderItems(items) {
@@ -619,6 +682,61 @@
             return `${parts[0]}:${parts[1]}`;
         }
         return type;
+    }
+
+    getRecipeDescription(recipe) {
+        // Provide helpful descriptions for dynamic/special recipe types
+        if (recipe.format === 'addJsonRecipe') {
+            const type = recipe.data?.type || '';
+
+            // Special recipe type descriptions
+            const descriptions = {
+                'ae2:add_item_upgrade': 'Dynamic recipe for upgrading Applied Energistics 2 items with upgrade components in crafting grid',
+                'ae2:remove_item_upgrade': 'Dynamic recipe for removing upgrades from Applied Energistics 2 items',
+                'framedblocks:apply_camo': 'Special recipe for applying camouflage patterns to FramedBlocks using a brush tool',
+                'sophisticatedbackpacks:backpack_dye': 'Dynamic recipe for dyeing SophisticatedBackpacks with any dye color',
+                'sophisticatedbackpacks:backpack_upgrade': 'Recipe for adding upgrade components to SophisticatedBackpacks',
+                'sophisticatedstorage:storage_dye': 'Dynamic recipe for dyeing SophisticatedStorage blocks with any dye color',
+                'create:item_application': 'Create mod recipe for applying items to blocks or other items',
+                'thermal:dynamo_fuel': 'Thermal Series recipe defining fuel types and burn values for dynamos',
+                'immersiveengineering:blueprint': 'Immersive Engineering blueprint crafting recipe',
+                'botania:petal_apothecary': 'Botania recipe for the Petal Apothecary ritual crafting',
+                'mekanism:combiner': 'Mekanism Combiner recipe for merging items with other materials'
+            };
+
+            if (descriptions[type]) {
+                return descriptions[type];
+            }
+
+            // Generic descriptions for mod namespaces
+            const modDescriptions = {
+                'ae2': 'Applied Energistics 2 dynamic recipe that works with compatible items',
+                'create': 'Create mod special recipe with programmatic behavior',
+                'thermal': 'Thermal Series recipe with dynamic item/energy interactions',
+                'mekanism': 'Mekanism machine recipe with special processing logic',
+                'immersiveengineering': 'Immersive Engineering special crafting recipe',
+                'botania': 'Botania magical recipe with ritual or special requirements',
+                'sophisticatedbackpacks': 'SophisticatedBackpacks dynamic recipe for item modifications',
+                'sophisticatedstorage': 'SophisticatedStorage dynamic recipe for storage modifications'
+            };
+
+            const modNamespace = type.split(':')[0];
+            if (modDescriptions[modNamespace]) {
+                return modDescriptions[modNamespace];
+            }
+
+            // Check if it's a simple recipe with just type and category
+            const hasOnlyTypeAndCategory = recipe.data &&
+                Object.keys(recipe.data).length <= 2 &&
+                recipe.data.type &&
+                (recipe.data.category || Object.keys(recipe.data).length === 1);
+
+            if (hasOnlyTypeAndCategory) {
+                return 'Dynamic recipe that works programmatically - ingredients and outputs determined by game logic';
+            }
+        }
+
+        return null;
     }
 
     updateRecipeCount(total) {
