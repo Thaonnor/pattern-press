@@ -8,7 +8,7 @@ const { processSegmentFile } = require('./parsers');
  * CLI usage banner displayed when required arguments are missing.
  * @type {string}
  */
-const USAGE = 'Usage: node parse-segments.js <segments.json> [--out <results.json>]';
+const USAGE = 'Usage: node parse-segments.js <segments.json> [--out <results.json>] [--verbose]';
 
 /**
  * @typedef {Object} SegmentProcessingSummary
@@ -39,6 +39,7 @@ async function runCli(args, options = {}) {
 
     let segmentPath = null;
     let outputPath = null;
+    let verbose = false;
 
     for (let i = 0; i < args.length; i += 1) {
         const arg = args[i];
@@ -58,6 +59,11 @@ async function runCli(args, options = {}) {
             continue;
         }
 
+        if (arg === '--verbose' || arg === '-v') {
+            verbose = true;
+            continue;
+        }
+
         warn(`Unknown argument ignored: ${arg}`);
     }
 
@@ -72,6 +78,34 @@ async function runCli(args, options = {}) {
         logger.log(`  Parsed: ${summary.parsed}`);
         logger.log(`  Errors: ${summary.errors}`);
         logger.log(`  Unhandled: ${summary.unhandled}`);
+
+        // Show examples of unhandled segments to help identify missing parsers
+        if (summary.unhandled > 0 && summary.results) {
+            const unhandledSegments = summary.results.filter(r => r.dispatch.status === 'unhandled');
+
+            if (verbose) {
+                logger.log(`\nAll unhandled segments:`);
+                unhandledSegments.forEach((segment, index) => {
+                    logger.log(`  ${index + 1}. Lines ${segment.startLine}-${segment.endLine} (Recipe Type: ${segment.recipeType || 'unknown'}):`);
+                    logger.log(`     ${segment.rawText.replace(/\n/g, '\\n')}`);
+                    logger.log('');
+                });
+            } else {
+                logger.log(`\nUnhandled segment examples (showing first 3, use --verbose to see all):`);
+                unhandledSegments.slice(0, 3).forEach((segment, index) => {
+                    const preview = segment.rawText.length > 100
+                        ? segment.rawText.substring(0, 100) + '...'
+                        : segment.rawText;
+                    logger.log(`  ${index + 1}. Lines ${segment.startLine}-${segment.endLine} (Recipe Type: ${segment.recipeType || 'unknown'}):`);
+                    logger.log(`     ${preview.replace(/\n/g, '\\n')}`);
+                });
+
+                if (unhandledSegments.length > 3) {
+                    logger.log(`     ... and ${unhandledSegments.length - 3} more unhandled segments`);
+                }
+                logger.log('');
+            }
+        }
 
         let resolvedOutput = null;
         if (outputPath) {

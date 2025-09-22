@@ -85,7 +85,7 @@ test('createDefaultDispatcher registers all default handlers', (t) => {
     const dispatcher = harness.createDefaultDispatcher();
 
     t.ok(dispatcher.registerHandler, 'returns object with registerHandler method');
-    t.equal(harness.registerHandlerCalls.length, 3, 'registers three handlers');
+    t.equal(harness.registerHandlerCalls.length, 5, 'registers five handlers');
     t.equal(harness.registerHandlerCalls[0].name, 'json-crafting-handler', 'registers JSON handler');
     t.equal(harness.registerHandlerCalls[1].name, 'shaped-crafting-handler', 'registers shaped handler');
 });
@@ -177,7 +177,7 @@ test('processSegmentFile creates default dispatcher when none provided', async (
     await harness.processSegmentFile('segments.json');
 
     t.ok(harness.processSegmentsCalls[0].dispatcher.registerHandler, 'creates dispatcher with registerHandler method');
-    t.equal(harness.registerHandlerCalls.length, 3, 'registers default handlers');
+    t.equal(harness.registerHandlerCalls.length, 5, 'registers default handlers');
 });
 
 test('processSegmentFile passes logger option to default dispatcher', async (t) => {

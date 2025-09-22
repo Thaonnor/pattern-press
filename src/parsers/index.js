@@ -4,6 +4,8 @@ const { RecipeDispatcher, loadSegments, processSegments } = require('./dispatche
 const jsonCraftingHandler = require('./handlers/jsonCraftingHandler');
 const shapedCraftingHandler = require('./handlers/shapedCraftingHandler');
 const shapelessCraftingHandler = require('./handlers/shapelessCraftingHandler');
+const blastFurnaceHandler = require('./handlers/blastFurnaceHandler');
+const campfireHandler = require('./handlers/campfireHandler');
 
 /**
  * @typedef {Object} SegmentProcessingSummary
@@ -21,6 +23,8 @@ const shapelessCraftingHandler = require('./handlers/shapelessCraftingHandler');
  * - JSON-based recipes (addJsonRecipe calls)
  * - Shaped crafting table recipes (addShaped calls)
  * - Shapeless crafting table recipes (addShapeless calls)
+ * - Blast furnace recipes (blastFurnace.addRecipe calls)
+ * - Campfire cooking recipes (campfire.addRecipe calls)
  *
  * @param {{ logger?: Console }} [options] Configuration options for the dispatcher.
  * @param {Console} [options.logger=console] Logger instance for handler warnings and errors.
@@ -31,6 +35,8 @@ function createDefaultDispatcher({ logger = console } = {}) {
     dispatcher.registerHandler(jsonCraftingHandler);
     dispatcher.registerHandler(shapedCraftingHandler);
     dispatcher.registerHandler(shapelessCraftingHandler);
+    dispatcher.registerHandler(blastFurnaceHandler);
+    dispatcher.registerHandler(campfireHandler);
     return dispatcher;
 }
 
