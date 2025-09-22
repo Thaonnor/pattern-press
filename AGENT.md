@@ -166,6 +166,11 @@ Handlers must implement:
 - `parse(segment, context)` - Returns structured recipe data
 - `name` property for identification
 
+### Code Style Guidelines
+- Avoid unnecessary inline comments like "True complete coverage!" or throwaway celebratory statements
+- Keep code comments focused on technical implementation details and documentation
+- Maintain clean, professional code style throughout the codebase
+
 ### Error Handling
 - Parsing errors are caught and logged with segment line numbers
 - Failed segments are marked with `status: 'error'`

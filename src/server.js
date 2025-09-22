@@ -16,6 +16,7 @@ const {
     getRecipeStats
 } = require('./utils/recipe-utils');
 const { filterAndPaginateRecipes, normalizeFilters, normalizePagination } = require('./utils/recipe-filter-utils');
+const { logDetailedStats, getQuickSummary, getTopUnhandledTypes } = require('./utils/parse-stats');
 
 const app = express();
 const PORT = 3000;
@@ -98,16 +99,21 @@ app.post('/upload', upload.single('logFile'), async (req, res) => {
         }
 
         const logContent = req.file.buffer.toString('utf-8');
-        const recipes = await parseRecipeLog(logContent);
+        const parseResults = await parseRecipeLogWithStats(logContent);
 
-        parsedRecipes = recipes;
+        parsedRecipes = parseResults.recipes;
 
-        const stats = getRecipeStats(recipes);
+        const stats = getRecipeStats(parseResults.recipes);
 
         res.json({
             success: true,
-            message: `Parsed ${recipes.length} recipes`,
-            stats: stats
+            message: `Parsed ${parseResults.recipes.length} recipes`,
+            stats: stats,
+            parsing: {
+                coverage: parseResults.parsingStats.summary.coverage,
+                quickSummary: getQuickSummary(parseResults.rawResults),
+                topUnhandled: getTopUnhandledTypes(parseResults.rawResults)
+            }
         });
     } catch (error) {
         console.error('Error processing file:', error);
@@ -147,12 +153,12 @@ app.get('/stats', (req, res) => {
 });
 
 /**
- * Parses the raw CraftTweaker log content into normalized recipe summaries.
+ * Parses the raw CraftTweaker log content into normalized recipe summaries with detailed statistics.
  *
  * @param {string} logContent Full text contents of a CraftTweaker log file.
- * @returns {Promise<NormalizedRecipe[]>} Normalized recipes ready for client consumption.
+ * @returns {Promise<{recipes: NormalizedRecipe[], parsingStats: Object, rawResults: Object}>} Enhanced results with statistics.
  */
-async function parseRecipeLog(logContent) {
+async function parseRecipeLogWithStats(logContent) {
     console.log(`Processing file of ${logContent.length} characters`);
 
     const segments = segmentLogContent(logContent);
@@ -160,6 +166,15 @@ async function parseRecipeLog(logContent) {
 
     const dispatcher = createDefaultDispatcher({ logger: console });
     const processedSegments = await processSegments(dispatcher, segments);
+
+    // Create results object for statistics analysis
+    const rawResults = {
+        total: processedSegments.length,
+        results: processedSegments,
+        parsed: processedSegments.filter(r => r.dispatch?.status === 'parsed').length,
+        errors: processedSegments.filter(r => r.dispatch?.status === 'error').length,
+        unhandled: processedSegments.filter(r => r.dispatch?.status === 'unhandled').length
+    };
 
     const recipes = [];
 
@@ -178,8 +193,27 @@ async function parseRecipeLog(logContent) {
         }
     });
 
-    console.log(`Successfully parsed ${recipes.length} out of ${processedSegments.length} segmented recipes`);
-    return recipes;
+    // Log enhanced statistics
+    console.log('\n' + '='.repeat(50));
+    logDetailedStats(rawResults);
+    console.log('='.repeat(50));
+
+    return {
+        recipes,
+        parsingStats: require('./utils/parse-stats').analyzeResults(rawResults),
+        rawResults
+    };
+}
+
+/**
+ * Parses the raw CraftTweaker log content into normalized recipe summaries (legacy function for compatibility).
+ *
+ * @param {string} logContent Full text contents of a CraftTweaker log file.
+ * @returns {Promise<NormalizedRecipe[]>} Normalized recipes ready for client consumption.
+ */
+async function parseRecipeLog(logContent) {
+    const results = await parseRecipeLogWithStats(logContent);
+    return results.recipes;
 }
 
 /**

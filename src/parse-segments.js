@@ -5,6 +5,7 @@ const path = require('path');
 const { processSegmentFile } = require('./parsers');
 const { RecipeDatabase } = require('./recipe-database');
 const { normalizeRecipeTypeValue } = require('./utils/recipe-utils');
+const { logDetailedStats, getQuickSummary, getTopUnhandledTypes } = require('./utils/parse-stats');
 
 /**
  * CLI usage banner displayed when required arguments are missing.
@@ -111,36 +112,44 @@ async function runCli(args, options = {}) {
             logger.log(`Database updated: ${dbStats.added} added, ${dbStats.updated} updated, ${dbStats.total} total recipes`);
         }
 
-        logger.log(`Processed ${summary.total} segments.`);
-        logger.log(`  Parsed: ${summary.parsed}`);
-        logger.log(`  Errors: ${summary.errors}`);
-        logger.log(`  Unhandled: ${summary.unhandled}`);
+        // Use enhanced logging for better coverage analysis
+        console.log('\n' + '='.repeat(60));
+        console.log('CRAFTTWEAKER PARSING ANALYSIS');
+        console.log('='.repeat(60));
 
-        // Show examples of unhandled segments to help identify missing parsers
-        if (summary.unhandled > 0 && summary.results) {
+        logDetailedStats(summary, {
+            showDetails: true,
+            maxUnhandled: verbose ? Infinity : 5
+        });
+
+        // Show development priorities
+        const topUnhandled = getTopUnhandledTypes(summary, 5);
+        if (topUnhandled.length > 0) {
+            console.log('\n🎯 DEVELOPMENT PRIORITIES:');
+            console.log('-'.repeat(30));
+            topUnhandled.forEach((item, index) => {
+                const priority = item.priority === 'HIGH' ? '🔴' : item.priority === 'MEDIUM' ? '🟡' : '🟢';
+                console.log(`${index + 1}. ${priority} ${item.type.replace('<recipetype:', '').replace('>', '')}: ${item.count} recipes`);
+            });
+            console.log(`\n💡 Focus on HIGH priority types for maximum coverage impact`);
+        }
+
+        console.log('='.repeat(60));
+
+        // Show detailed examples only if verbose mode
+        if (verbose && summary.unhandled > 0 && summary.results) {
             const unhandledSegments = summary.results.filter(r => r.dispatch.status === 'unhandled');
 
-            if (verbose) {
-                logger.log(`\nAll unhandled segments:`);
-                unhandledSegments.forEach((segment, index) => {
-                    logger.log(`  ${index + 1}. Lines ${segment.startLine}-${segment.endLine} (Recipe Type: ${segment.recipeType || 'unknown'}):`);
-                    logger.log(`     ${segment.rawText.replace(/\n/g, '\\n')}`);
-                    logger.log('');
-                });
-            } else {
-                logger.log(`\nUnhandled segment examples (showing first 3, use --verbose to see all):`);
-                unhandledSegments.slice(0, 3).forEach((segment, index) => {
-                    const preview = segment.rawText.length > 100
-                        ? segment.rawText.substring(0, 100) + '...'
-                        : segment.rawText;
-                    logger.log(`  ${index + 1}. Lines ${segment.startLine}-${segment.endLine} (Recipe Type: ${segment.recipeType || 'unknown'}):`);
-                    logger.log(`     ${preview.replace(/\n/g, '\\n')}`);
-                });
-
-                if (unhandledSegments.length > 3) {
-                    logger.log(`     ... and ${unhandledSegments.length - 3} more unhandled segments`);
-                }
+            console.log(`\n🔍 DETAILED UNHANDLED EXAMPLES:`);
+            console.log('-'.repeat(40));
+            unhandledSegments.slice(0, 10).forEach((segment, index) => {
+                logger.log(`${index + 1}. ${segment.recipeType || 'unknown'} (lines ${segment.startLine}-${segment.endLine}):`);
+                logger.log(`   ${segment.rawText.replace(/\n/g, '\\n')}`);
                 logger.log('');
+            });
+
+            if (unhandledSegments.length > 10) {
+                logger.log(`... and ${unhandledSegments.length - 10} more unhandled segments`);
             }
         }
 

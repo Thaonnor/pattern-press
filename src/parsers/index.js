@@ -11,9 +11,9 @@ const smokingHandler = require('./handlers/smokingHandler');
 const smithingHandler = require('./handlers/smithingHandler');
 const cuttingHandler = require('./handlers/cuttingHandler');
 const cookingHandler = require('./handlers/cookingHandler');
-const chemicalConversionHandler = require('./handlers/chemicalConversionHandler');
-const centrifugingHandler = require('./handlers/centrifugingHandler');
-const activatingHandler = require('./handlers/activatingHandler');
+
+// Mekanism mod handlers
+const mekanismHandlers = require('./mods/mekanism');
 
 /**
  * @typedef {Object} SegmentProcessingSummary
@@ -38,9 +38,7 @@ const activatingHandler = require('./handlers/activatingHandler');
  * - Smithing recipes (smithing.addTransformRecipe and smithing.addTrimRecipe calls)
  * - Cutting recipes (farmersdelight cutting board recipes)
  * - Cooking recipes (farmersdelight cooking pot recipes)
- * - Chemical conversion recipes (mekanism item-to-chemical conversion)
- * - Centrifuging recipes (mekanism chemical centrifuge separation)
- * - Activating recipes (mekanism solar neutron activator transformation)
+ * - Mekanism recipes (chemical conversion, centrifuging, activating)
  *
  * @param {{ logger?: Console }} [options] Configuration options for the dispatcher.
  * @param {Console} [options.logger=console] Logger instance for handler warnings and errors.
@@ -58,9 +56,11 @@ function createDefaultDispatcher({ logger = console } = {}) {
     dispatcher.registerHandler(smithingHandler);
     dispatcher.registerHandler(cuttingHandler);
     dispatcher.registerHandler(cookingHandler);
-    dispatcher.registerHandler(chemicalConversionHandler);
-    dispatcher.registerHandler(centrifugingHandler);
-    dispatcher.registerHandler(activatingHandler);
+
+    // Register all Mekanism handlers
+    mekanismHandlers.getAllHandlers().forEach(handler => {
+        dispatcher.registerHandler(handler);
+    });
     return dispatcher;
 }
 
