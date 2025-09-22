@@ -1,0 +1,525 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Courier New', monospace;
+    background: linear-gradient(135deg, #2d5016 0%, #1a3009 100%);
+    min-height: 100vh;
+    color: #e0e0e0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 40px;
+    color: white;
+}
+
+header h1 {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+header p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+main {
+    background: #3c3c3c;
+    border: 2px solid #8b8b8b;
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.upload-section {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.upload-section h2 {
+    margin-bottom: 20px;
+    color: #55ff55;
+}
+
+.upload-area {
+    border: 3px dashed #8b8b8b;
+    border-radius: 8px;
+    padding: 40px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background: #555555;
+}
+
+.upload-area:hover, .upload-area.drag-over {
+    border-color: #55ff55;
+    background: #4a4a4a;
+}
+
+.upload-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.upload-icon {
+    font-size: 3rem;
+}
+
+.upload-button {
+    background: #8b8b8b;
+    color: white;
+    border: 2px solid #555555;
+    padding: 12px 24px;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Courier New', monospace;
+}
+
+.upload-button:hover {
+    background: #55ff55;
+    color: black;
+    border-color: #55ff55;
+}
+
+.loading {
+    font-size: 1.2rem;
+    color: #55ff55;
+}
+
+.filter-section, .recipes-section {
+    margin-top: 30px;
+}
+
+.filter-section h2, .recipes-section h2 {
+    color: #55ff55;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #8b8b8b;
+    padding-bottom: 10px;
+}
+
+.filter-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.filter-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #e0e0e0;
+}
+
+.filter-group input,
+.filter-group select {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #8b8b8b;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    background: #555555;
+    color: #e0e0e0;
+    font-family: 'Courier New', monospace;
+    transition: border-color 0.3s ease;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+    outline: none;
+    border-color: #55ff55;
+}
+
+.recipe-card {
+    background: #555555;
+    border: 2px solid #8b8b8b;
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.recipe-card:hover {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.recipe-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #8b8b8b;
+}
+
+.recipe-header h3 {
+    color: #e0e0e0;
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.recipe-type {
+    background: #8b8b8b;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 2px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    font-family: 'Courier New', monospace;
+}
+
+.recipe-content {
+    margin-bottom: 15px;
+}
+
+.generic-recipe {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.recipe-inputs, .recipe-outputs {
+    flex: 1;
+    min-width: 200px;
+}
+
+.recipe-inputs h4, .recipe-outputs h4 {
+    color: #55ff55;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+}
+
+.items-list, .fluids-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.item-slot, .fluid-slot {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #4a4a4a;
+    padding: 8px;
+    border-radius: 2px;
+    border: 1px solid #8b8b8b;
+}
+
+.item-icon, .fluid-icon {
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+}
+
+.item-info, .fluid-info {
+    flex: 1;
+}
+
+.item-name, .fluid-name {
+    font-weight: 500;
+    color: #e0e0e0;
+    font-size: 0.9rem;
+}
+
+.item-amount, .fluid-amount {
+    color: #aaaaaa;
+    font-size: 0.8rem;
+}
+
+.arrow {
+    font-size: 1.5rem;
+    color: #55ff55;
+    font-weight: bold;
+}
+
+.smelting-recipe {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    justify-content: center;
+}
+
+.smelting-input, .smelting-output {
+    flex: 1;
+    max-width: 200px;
+}
+
+.crafting-recipe {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.crafting-grid {
+    flex-shrink: 0;
+}
+
+.grid-3x3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 2px;
+    background: #8b8b8b;
+    border: 2px solid #555555;
+    border-radius: 4px;
+    padding: 4px;
+    width: 150px;
+    height: 150px;
+}
+
+.crafting-slot {
+    background: #4a4a4a;
+    border: 1px solid #8b8b8b;
+    border-radius: 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    min-height: 45px;
+}
+
+.crafting-slot.empty {
+    background: #2a2a2a;
+    border-style: dashed;
+}
+
+.crafting-slot.filled {
+    background: #555555;
+    border-color: #55ff55;
+}
+
+.slot-icon {
+    font-size: 1.2rem;
+    margin-bottom: 2px;
+}
+
+.slot-name {
+    font-size: 0.6rem;
+    color: #e0e0e0;
+    text-align: center;
+    line-height: 1.1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+    padding: 0 2px;
+}
+
+.crafting-result {
+    flex-shrink: 0;
+}
+
+.crafting-output {
+    display: flex;
+    justify-content: center;
+}
+
+.output-slot {
+    background: #555555;
+    border: 2px solid #55ff55;
+    border-radius: 4px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 60px;
+    min-height: 60px;
+}
+
+.output-slot .slot-icon {
+    font-size: 1.5rem;
+    margin-bottom: 4px;
+}
+
+.output-slot .slot-name {
+    font-size: 0.8rem;
+    white-space: normal;
+    text-align: center;
+}
+
+.shapeless-ingredients h4 {
+    color: #55ff55;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.ingredients-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+    max-width: 200px;
+}
+
+.ingredients-grid .crafting-slot {
+    width: 40px;
+    height: 40px;
+    min-height: 40px;
+}
+
+.recipe-properties {
+    margin-top: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.property {
+    background: #8b8b8b;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 2px;
+    font-size: 0.8rem;
+    font-family: 'Courier New', monospace;
+}
+
+.recipe-details {
+    border-top: 1px solid #8b8b8b;
+    padding-top: 15px;
+}
+
+.details-btn {
+    background: #8b8b8b;
+    color: white;
+    border: 2px solid #555555;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    transition: all 0.3s ease;
+}
+
+.details-btn:hover {
+    background: #55ff55;
+    color: black;
+    border-color: #55ff55;
+}
+
+.recipe-raw-data {
+    margin-top: 10px;
+    background: #1a1a1a;
+    color: #55ff55;
+    padding: 15px;
+    border: 1px solid #8b8b8b;
+    border-radius: 2px;
+    overflow-x: auto;
+}
+
+.recipe-raw-data pre {
+    margin: 0;
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 30px;
+    padding: 20px;
+}
+
+.pagination button {
+    background: #8b8b8b;
+    color: white;
+    border: 2px solid #555555;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    transition: all 0.3s ease;
+}
+
+.pagination button:hover:not(:disabled) {
+    background: #55ff55;
+    color: black;
+    border-color: #55ff55;
+}
+
+.pagination button:disabled {
+    background: #555555;
+    color: #888888;
+    border-color: #444444;
+    cursor: not-allowed;
+}
+
+.pagination span {
+    color: #e0e0e0;
+    font-weight: 500;
+    font-family: 'Courier New', monospace;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+
+    header h1 {
+        font-size: 2rem;
+    }
+
+    main {
+        padding: 20px;
+    }
+
+    .filter-controls {
+        grid-template-columns: 1fr;
+    }
+
+    .generic-recipe {
+        flex-direction: column;
+    }
+
+    .smelting-recipe {
+        flex-direction: column;
+    }
+
+    .crafting-recipe {
+        flex-direction: column;
+    }
+
+    .grid-3x3 {
+        width: 120px;
+        height: 120px;
+    }
+
+    .crafting-slot {
+        min-height: 35px;
+    }
+
+    .slot-name {
+        font-size: 0.5rem;
+    }
+
+    .arrow {
+        transform: rotate(90deg);
+    }
+
+    .recipe-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+}

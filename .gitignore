@@ -1,0 +1,17 @@
+﻿node_modules/
+.env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Generated data artifacts
+/data/segments/
+/data/*.json
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+.claude/
+
