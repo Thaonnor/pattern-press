@@ -6,6 +6,14 @@ const shapedCraftingHandler = require('./handlers/shapedCraftingHandler');
 const shapelessCraftingHandler = require('./handlers/shapelessCraftingHandler');
 const blastFurnaceHandler = require('./handlers/blastFurnaceHandler');
 const campfireHandler = require('./handlers/campfireHandler');
+const smeltingHandler = require('./handlers/smeltingHandler');
+const smokingHandler = require('./handlers/smokingHandler');
+const smithingHandler = require('./handlers/smithingHandler');
+const cuttingHandler = require('./handlers/cuttingHandler');
+const cookingHandler = require('./handlers/cookingHandler');
+const chemicalConversionHandler = require('./handlers/chemicalConversionHandler');
+const centrifugingHandler = require('./handlers/centrifugingHandler');
+const activatingHandler = require('./handlers/activatingHandler');
 
 /**
  * @typedef {Object} SegmentProcessingSummary
@@ -25,6 +33,14 @@ const campfireHandler = require('./handlers/campfireHandler');
  * - Shapeless crafting table recipes (addShapeless calls)
  * - Blast furnace recipes (blastFurnace.addRecipe calls)
  * - Campfire cooking recipes (campfire.addRecipe calls)
+ * - Smelting recipes (furnace.addRecipe calls)
+ * - Smoking recipes (smoker.addRecipe calls)
+ * - Smithing recipes (smithing.addTransformRecipe and smithing.addTrimRecipe calls)
+ * - Cutting recipes (farmersdelight cutting board recipes)
+ * - Cooking recipes (farmersdelight cooking pot recipes)
+ * - Chemical conversion recipes (mekanism item-to-chemical conversion)
+ * - Centrifuging recipes (mekanism chemical centrifuge separation)
+ * - Activating recipes (mekanism solar neutron activator transformation)
  *
  * @param {{ logger?: Console }} [options] Configuration options for the dispatcher.
  * @param {Console} [options.logger=console] Logger instance for handler warnings and errors.
@@ -37,6 +53,14 @@ function createDefaultDispatcher({ logger = console } = {}) {
     dispatcher.registerHandler(shapelessCraftingHandler);
     dispatcher.registerHandler(blastFurnaceHandler);
     dispatcher.registerHandler(campfireHandler);
+    dispatcher.registerHandler(smeltingHandler);
+    dispatcher.registerHandler(smokingHandler);
+    dispatcher.registerHandler(smithingHandler);
+    dispatcher.registerHandler(cuttingHandler);
+    dispatcher.registerHandler(cookingHandler);
+    dispatcher.registerHandler(chemicalConversionHandler);
+    dispatcher.registerHandler(centrifugingHandler);
+    dispatcher.registerHandler(activatingHandler);
     return dispatcher;
 }
 

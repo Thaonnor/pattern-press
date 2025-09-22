@@ -84,7 +84,7 @@ describe('Parsers Index', () => {
             const dispatcher = parsersModule.createDefaultDispatcher();
 
             expect(dispatcher.registerHandler).toBeDefined();
-            expect(registerHandlerCalls).toHaveLength(5);
+            expect(registerHandlerCalls).toHaveLength(13);
             expect(registerHandlerCalls[0].name).toBe('json-crafting-handler');
             expect(registerHandlerCalls[1].name).toBe('shaped-crafting-handler');
         });
@@ -167,7 +167,7 @@ describe('Parsers Index', () => {
             await parsersModule.processSegmentFile('segments.json');
 
             expect(processSegmentsCalls[0].dispatcher.registerHandler).toBeDefined();
-            expect(registerHandlerCalls).toHaveLength(5);
+            expect(registerHandlerCalls).toHaveLength(13);
         });
 
         test('passes logger option to default dispatcher', async () => {
