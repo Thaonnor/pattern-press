@@ -4,12 +4,37 @@ const fs = require('fs');
 const path = require('path');
 const { processSegmentFile } = require('./parsers');
 
-if (require.main === module) {
-    const args = process.argv.slice(2);
+/**
+ * CLI usage banner displayed when required arguments are missing.
+ * @type {string}
+ */
+const USAGE = 'Usage: node parse-segments.js <segments.json> [--out <results.json>]';
 
-    if (args.length === 0) {
-        console.error('Usage: node parse-segments.js <segments.json> [--out <results.json>]');
-        process.exit(1);
+/**
+ * @typedef {Object} SegmentProcessingSummary
+ * @property {number} total Count of segment entries that were inspected.
+ * @property {number} parsed Number of segments that produced a normalized recipe.
+ * @property {number} errors Number of segments that failed with an error.
+ * @property {number} unhandled Number of segments emitted by the dispatcher but not parsed.
+ */
+
+/**
+ * Parses command line arguments and drives the segment processing workflow.
+ *
+ * The function mirrors the legacy CLI behaviour: it logs progress, optionally writes
+ * a JSON summary to disk, and returns the processed summary for further inspection.
+ *
+ * @param {string[]} args CLI arguments (typically `process.argv.slice(2)`).
+ * @param {{ logger?: Console }} [options] Optional logger sink; defaults to the global console.
+ * @returns {Promise<{ summary: SegmentProcessingSummary, segmentPath: string, outputPath: string|null }>} Processing metadata.
+ * @throws {Error} When required arguments are missing or segment processing fails.
+ */
+async function runCli(args, options = {}) {
+    const logger = options.logger || console;
+    const warn = typeof logger.warn === 'function' ? logger.warn.bind(logger) : logger.log.bind(logger);
+
+    if (!Array.isArray(args) || args.length === 0) {
+        throw new Error(USAGE);
     }
 
     let segmentPath = null;
@@ -24,35 +49,55 @@ if (require.main === module) {
         }
 
         if (arg === '--out') {
-            outputPath = args[i + 1];
+            const candidate = args[i + 1];
+            if (!candidate) {
+                throw new Error('Missing value for --out option.');
+            }
+            outputPath = candidate;
             i += 1;
             continue;
         }
 
-        console.warn(`Unknown argument ignored: ${arg}`);
+        warn(`Unknown argument ignored: ${arg}`);
     }
 
     if (!segmentPath) {
-        console.error('Missing path to segment JSON file.');
-        process.exit(1);
+        throw new Error('Missing path to segment JSON file.');
     }
 
-    (async () => {
-        try {
-            const summary = await processSegmentFile(segmentPath);
-            console.log(`Processed ${summary.total} segments.`);
-            console.log(`  Parsed: ${summary.parsed}`);
-            console.log(`  Errors: ${summary.errors}`);
-            console.log(`  Unhandled: ${summary.unhandled}`);
+    try {
+        const summary = await processSegmentFile(segmentPath);
 
-            if (outputPath) {
-                const resolved = path.resolve(outputPath);
-                fs.writeFileSync(resolved, JSON.stringify(summary, null, 2), 'utf8');
-                console.log(`Results written to ${resolved}`);
-            }
-        } catch (error) {
-            console.error('Failed to process segments:', error.message);
-            process.exit(1);
+        logger.log(`Processed ${summary.total} segments.`);
+        logger.log(`  Parsed: ${summary.parsed}`);
+        logger.log(`  Errors: ${summary.errors}`);
+        logger.log(`  Unhandled: ${summary.unhandled}`);
+
+        let resolvedOutput = null;
+        if (outputPath) {
+            resolvedOutput = path.resolve(outputPath);
+            fs.writeFileSync(resolvedOutput, JSON.stringify(summary, null, 2), 'utf8');
+            logger.log(`Results written to ${resolvedOutput}`);
         }
-    })();
+
+        return {
+            summary,
+            segmentPath,
+            outputPath: resolvedOutput
+        };
+    } catch (error) {
+        throw new Error(`Failed to process segments: ${error.message}`);
+    }
 }
+
+if (require.main === module) {
+    runCli(process.argv.slice(2)).catch((error) => {
+        console.error(error.message);
+        process.exit(1);
+    });
+}
+
+module.exports = {
+    runCli,
+    USAGE
+};

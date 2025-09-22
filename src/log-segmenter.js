@@ -6,6 +6,12 @@ const path = require('path');
 const readline = require('readline');
 
 class RecipeSegment {
+    /**
+     * Represents a contiguous chunk of CraftTweaker log output associated with a recipe handler.
+     *
+     * @param {{ recipeType: string|null, startLine: number, endLine: number, lines: string[] }} params
+     * Fields extracted from the segment accumulator.
+     */
     constructor({ recipeType, startLine, endLine, lines }) {
         this.recipeType = recipeType;
         this.startLine = startLine;
@@ -68,6 +74,12 @@ function createSegmentAccumulator(options = {}) {
     }
 
     return {
+        /**
+         * Evaluates an incoming log line and mutates the active segment state when appropriate.
+         *
+         * @param {string} line Raw log line.
+         * @param {number} lineNumber 1-based file line number used for diagnostics.
+         */
         handleLine(line, lineNumber) {
             const trimmed = line.trim();
 
@@ -102,18 +114,33 @@ function createSegmentAccumulator(options = {}) {
             }
         },
 
+        /**
+         * Flushes any incomplete segment at the end of the file.
+         *
+         * @param {number} lineNumber Line number to use as the closing boundary.
+         */
         finalize(lineNumber) {
             if (activeSegment) {
                 pushActiveSegment(lineNumber);
             }
         },
 
+        /**
+         * @returns {RecipeSegment[]} All segments accumulated so far.
+         */
         getSegments() {
             return segments;
         }
     };
 }
 
+/**
+ * Reads a CraftTweaker log from disk and breaks it into recipe segments.
+ *
+ * @param {string} logPath Path to the `crafttweaker.log` file.
+ * @param {{ startPatterns?: RegExp[] }} [options] Optional overrides for handler detection.
+ * @returns {Promise<RecipeSegment[]>} Segmented recipe chunks.
+ */
 async function segmentLogFile(logPath, options = {}) {
     const resolvedPath = path.resolve(logPath);
     if (!fs.existsSync(resolvedPath)) {
@@ -137,6 +164,13 @@ async function segmentLogFile(logPath, options = {}) {
     return accumulator.getSegments();
 }
 
+/**
+ * Segments an in-memory log string without touching the filesystem.
+ *
+ * @param {string} logContent Raw log content.
+ * @param {{ startPatterns?: RegExp[] }} [options] Optional overrides for handler detection.
+ * @returns {RecipeSegment[]} Segmented recipe chunks.
+ */
 function segmentLogContent(logContent, options = {}) {
     if (typeof logContent !== 'string') {
         throw new Error('logContent must be a string');
@@ -153,6 +187,14 @@ function segmentLogContent(logContent, options = {}) {
     return accumulator.getSegments();
 }
 
+/**
+ * Persists segmented log output to a timestamped JSON file.
+ *
+ * @param {RecipeSegment[]} segments Segments to serialize.
+ * @param {string} outputDir Destination directory.
+ * @param {{ prefix?: string, includeRaw?: boolean }} [options] Output shaping options.
+ * @returns {Promise<string>} Absolute path to the written JSON artifact.
+ */
 async function persistSegments(segments, outputDir, options = {}) {
     const { prefix = 'segments', includeRaw = true } = options;
 
