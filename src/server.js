@@ -479,11 +479,24 @@ function getRecipeStats(recipes) {
     return stats;
 }
 
-app.listen(PORT, () => {
-    console.log(`CraftTweaker Recipe Parser running at http://localhost:${PORT}`);
-});
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`CraftTweaker Recipe Parser running at http://localhost:${PORT}`);
+    });
+}
 
-
-
+module.exports = {
+    app,
+    parseRecipeLog,
+    normalizeDispatchedRecipe,
+    normalizeRecipeTypeValue,
+    getModFromId,
+    getMachineTypeFromRecipeType,
+    extractInputs,
+    extractOutputs,
+    extractCraftingInputs,
+    extractCraftingOutputs,
+    getRecipeStats
+};
 
 
