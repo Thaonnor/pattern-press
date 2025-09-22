@@ -3,12 +3,14 @@
 const fs = require('fs');
 const path = require('path');
 const { processSegmentFile } = require('./parsers');
+const { RecipeDatabase } = require('./recipe-database');
+const { normalizeRecipeTypeValue } = require('./utils/recipe-utils');
 
 /**
  * CLI usage banner displayed when required arguments are missing.
  * @type {string}
  */
-const USAGE = 'Usage: node parse-segments.js <segments.json> [--out <results.json>] [--verbose]';
+const USAGE = 'Usage: node parse-segments.js <segments.json> [--out <results.json>] [--db <database.json>] [--verbose]';
 
 /**
  * @typedef {Object} SegmentProcessingSummary
@@ -16,6 +18,7 @@ const USAGE = 'Usage: node parse-segments.js <segments.json> [--out <results.jso
  * @property {number} parsed Number of segments that produced a normalized recipe.
  * @property {number} errors Number of segments that failed with an error.
  * @property {number} unhandled Number of segments emitted by the dispatcher but not parsed.
+ * @property {Object} [database] Database persistence statistics when enabled.
  */
 
 /**
@@ -26,7 +29,7 @@ const USAGE = 'Usage: node parse-segments.js <segments.json> [--out <results.jso
  *
  * @param {string[]} args CLI arguments (typically `process.argv.slice(2)`).
  * @param {{ logger?: Console }} [options] Optional logger sink; defaults to the global console.
- * @returns {Promise<{ summary: SegmentProcessingSummary, segmentPath: string, outputPath: string|null }>} Processing metadata.
+ * @returns {Promise<{ summary: SegmentProcessingSummary, segmentPath: string, outputPath: string|null, databasePath: string|null }>} Processing metadata.
  * @throws {Error} When required arguments are missing or segment processing fails.
  */
 async function runCli(args, options = {}) {
@@ -39,6 +42,7 @@ async function runCli(args, options = {}) {
 
     let segmentPath = null;
     let outputPath = null;
+    let databasePath = null;
     let verbose = false;
 
     for (let i = 0; i < args.length; i += 1) {
@@ -59,6 +63,16 @@ async function runCli(args, options = {}) {
             continue;
         }
 
+        if (arg === '--db') {
+            const candidate = args[i + 1];
+            if (!candidate) {
+                throw new Error('Missing value for --db option.');
+            }
+            databasePath = candidate;
+            i += 1;
+            continue;
+        }
+
         if (arg === '--verbose' || arg === '-v') {
             verbose = true;
             continue;
@@ -73,6 +87,29 @@ async function runCli(args, options = {}) {
 
     try {
         const summary = await processSegmentFile(segmentPath);
+
+        // Handle database persistence if requested
+        if (databasePath) {
+            const db = new RecipeDatabase(databasePath);
+            await db.load();
+
+            // Extract successfully parsed recipes and normalize recipe types
+            const recipes = summary.results
+                .filter(r => r.dispatch.status === 'parsed')
+                .map(r => {
+                    const recipe = { ...r.dispatch.result };
+                    // Normalize recipe type to remove <recipetype:> wrapper
+                    if (recipe.recipeType) {
+                        recipe.recipeType = normalizeRecipeTypeValue(recipe.recipeType);
+                    }
+                    return recipe;
+                });
+
+            const dbStats = await db.bulkUpsert(recipes);
+            summary.database = dbStats;
+
+            logger.log(`Database updated: ${dbStats.added} added, ${dbStats.updated} updated, ${dbStats.total} total recipes`);
+        }
 
         logger.log(`Processed ${summary.total} segments.`);
         logger.log(`  Parsed: ${summary.parsed}`);
@@ -117,7 +154,8 @@ async function runCli(args, options = {}) {
         return {
             summary,
             segmentPath,
-            outputPath: resolvedOutput
+            outputPath: resolvedOutput,
+            databasePath
         };
     } catch (error) {
         throw new Error(`Failed to process segments: ${error.message}`);

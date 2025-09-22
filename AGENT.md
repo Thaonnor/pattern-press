@@ -123,6 +123,12 @@
 │   ├── server.js              # Main Express server
 │   ├── log-segmenter.js       # Log parsing utilities
 │   ├── parse-segments.js      # CLI segment processor
+│   ├── recipe-database.js     # Persistent recipe storage
+│   ├── utils/                 # Shared utility modules
+│   │   ├── recipe-utils.js    # Recipe processing functions
+│   │   ├── file-utils.js      # File system operations
+│   │   ├── cli-utils.js       # CLI argument parsing
+│   │   └── recipe-filter-utils.js # Recipe filtering/search
 │   └── parsers/
 │       ├── index.js           # Parser module exports
 │       ├── dispatcher.js      # Handler coordination
@@ -148,8 +154,29 @@ Handlers must implement:
 
 ### Memory Management
 - Parsed recipes are cached in server memory (`parsedRecipes` array)
-- No persistent database - state resets on server restart
+- Optional persistent storage via `RecipeDatabase` class using recipe IDs as keys
 - File uploads limited to 50MB
+
+### Utility Modules
+#### recipe-utils.js
+- Recipe processing functions (normalization, extraction, statistics)
+- Handles recipe type normalization, mod extraction, I/O parsing
+- Functions previously in server.js, now reusable across modules
+
+#### file-utils.js
+- File system operations with consistent patterns
+- Timestamp generation, directory creation, JSON file handling
+- Safe file operations with backup functionality
+
+#### cli-utils.js
+- Command line argument parsing with validation
+- Supports options with values, flags, positional arguments
+- Consistent CLI patterns across log-segmenter.js and parse-segments.js
+
+#### recipe-filter-utils.js
+- Recipe filtering, searching, and pagination utilities
+- Advanced search with relevance scoring
+- Used by server endpoints for recipe queries
 
 ## Common Operations
 
@@ -162,8 +189,9 @@ Handlers must implement:
 ### Testing Recipe Parsing
 1. Segment test log: `node src/log-segmenter.js test.log --out-dir data/segments`
 2. Process segments: `node src/parse-segments.js data/segments/<file>.json`
-3. Run web server: `npm start`
-4. Upload via web interface or use existing JSON data
+3. Persist to database: `node src/parse-segments.js data/segments/<file>.json --db data/recipe-database.json`
+4. Run web server: `npm start`
+5. Upload via web interface or use existing JSON data
 
 ### Debugging Parser Issues
 - Check segment extraction patterns in `log-segmenter.js`

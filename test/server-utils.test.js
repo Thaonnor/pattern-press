@@ -8,9 +8,9 @@ const {
     extractOutputs,
     extractCraftingInputs,
     extractCraftingOutputs,
-    normalizeDispatchedRecipe,
     getRecipeStats
-} = require('../src/server');
+} = require('../src/utils/recipe-utils');
+const { normalizeDispatchedRecipe } = require('../src/server');
 
 const sampleJsonRecipe = {
     dispatch: {

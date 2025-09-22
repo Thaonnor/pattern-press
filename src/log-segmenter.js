@@ -4,6 +4,7 @@ const fs = require('fs');
 const fsPromises = fs.promises;
 const path = require('path');
 const readline = require('readline');
+const { timestampSlug, ensureDirectoryExists, writeJsonFile } = require('./utils/file-utils');
 
 class RecipeSegment {
     /**
@@ -38,16 +39,6 @@ function adjustParenthesisDepth(line) {
     return opens - closes;
 }
 
-function timestampSlug(date = new Date()) {
-    const pad = (value) => String(value).padStart(2, '0');
-    const year = date.getUTCFullYear();
-    const month = pad(date.getUTCMonth() + 1);
-    const day = pad(date.getUTCDate());
-    const hour = pad(date.getUTCHours());
-    const minute = pad(date.getUTCMinutes());
-    const second = pad(date.getUTCSeconds());
-    return `${year}${month}${day}-${hour}${minute}${second}`;
-}
 
 function createSegmentAccumulator(options = {}) {
     const config = { ...defaultOptions, ...options };
