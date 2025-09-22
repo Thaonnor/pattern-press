@@ -146,6 +146,50 @@ function isDirectory(dirPath) {
     return stats ? stats.isDirectory() : false;
 }
 
+/**
+ * Recursively finds all files with specified extensions in a directory and its subdirectories.
+ *
+ * @param {string} dirPath Directory to search.
+ * @param {Object} [options] Search options.
+ * @param {string[]} [options.extensions=['.json']] File extensions to include.
+ * @returns {string[]} Array of absolute file paths.
+ * @throws {Error} When directory doesn't exist or can't be read.
+ */
+function findFilesRecursive(dirPath, options = {}) {
+    const { extensions = ['.json'] } = options;
+
+    if (!isDirectory(dirPath)) {
+        throw new Error(`Directory does not exist or is not accessible: ${dirPath}`);
+    }
+
+    const results = [];
+
+    function scan(currentDir) {
+        try {
+            const entries = fs.readdirSync(currentDir, { withFileTypes: true });
+
+            for (const entry of entries) {
+                const fullPath = path.join(currentDir, entry.name);
+
+                if (entry.isDirectory()) {
+                    scan(fullPath);
+                } else if (entry.isFile()) {
+                    const ext = path.extname(entry.name).toLowerCase();
+                    if (extensions.includes(ext)) {
+                        results.push(fullPath);
+                    }
+                }
+            }
+        } catch (error) {
+            // Skip directories we can't read (permissions, etc.)
+            console.warn(`Warning: Could not read directory ${currentDir}: ${error.message}`);
+        }
+    }
+
+    scan(dirPath);
+    return results;
+}
+
 module.exports = {
     timestampSlug,
     ensureDirectoryExists,
@@ -155,5 +199,6 @@ module.exports = {
     safeWriteFile,
     getFileStats,
     isFile,
-    isDirectory
+    isDirectory,
+    findFilesRecursive
 };
