@@ -4,7 +4,6 @@
  * @typedef {Object} FilterOptions
  * @property {string} [type] Filter by recipe type.
  * @property {string} [mod] Filter by mod namespace.
- * @property {string} [format] Filter by handler format.
  * @property {string} [search] Search term for name/content filtering.
  */
 
@@ -30,7 +29,7 @@
  * @returns {Array} Filtered recipes.
  */
 function filterRecipes(recipes, filters = {}) {
-    const { type, mod, format, search } = filters;
+    const { type, mod, search } = filters;
     let filtered = [...recipes];
 
     if (type && type !== '') {
@@ -39,10 +38,6 @@ function filterRecipes(recipes, filters = {}) {
 
     if (mod && mod !== '') {
         filtered = filtered.filter(recipe => recipe.mod === mod);
-    }
-
-    if (format && format !== '') {
-        filtered = filtered.filter(recipe => recipe.format === format);
     }
 
     if (search && search !== '') {
@@ -187,7 +182,7 @@ function searchRecipes(recipes, query, options = {}) {
  * Groups recipes by a specified field.
  *
  * @param {Array} recipes Array of recipe objects.
- * @param {string} groupBy Field name to group by (e.g., 'type', 'mod', 'format').
+ * @param {string} groupBy Field name to group by (e.g., 'type', 'mod').
  * @returns {Record<string, Array>} Recipes grouped by the specified field.
  */
 function groupRecipes(recipes, groupBy) {
@@ -219,10 +214,6 @@ function normalizeFilters(rawFilters) {
 
     if (rawFilters.mod && typeof rawFilters.mod === 'string' && rawFilters.mod.trim()) {
         filters.mod = rawFilters.mod.trim();
-    }
-
-    if (rawFilters.format && typeof rawFilters.format === 'string' && rawFilters.format.trim()) {
-        filters.format = rawFilters.format.trim();
     }
 
     if (rawFilters.search && typeof rawFilters.search === 'string' && rawFilters.search.trim()) {
