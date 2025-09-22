@@ -1,4 +1,4 @@
-class RecipeParser {
+﻿class RecipeParser {
     constructor() {
         this.recipes = [];
         this.stats = {};
@@ -77,7 +77,7 @@ class RecipeParser {
 
             if (result.success) {
                 this.stats = result.stats;
-                uploadArea.innerHTML = '<div class="upload-content"><div style="color: #55ff55;">✓ File processed successfully!</div></div>';
+                uploadArea.innerHTML = '<div class=\"upload-content\"><div class=\"loading\" style=\"color: #7bd45a;\">File processed successfully!</div></div>';
                 this.showResults();
                 await this.loadRecipes();
             } else {
@@ -172,11 +172,24 @@ class RecipeParser {
         card.className = 'recipe-card';
 
         const recipeType = this.getRecipeDisplayType(recipe.type);
+        const recipeName = this.getRecipeDisplayName(recipe.name);
+        const modLabel = this.getModLabel(recipe.mod);
+        const formatLabel = this.getFormatLabel(recipe);
+        const recipeTitle = this.escapeHtml(recipeName);
+        const modBadge = this.escapeHtml(modLabel);
+        const recipeTypeLabel = this.escapeHtml(recipeType);
+        const formatBadge = formatLabel ? this.escapeHtml(formatLabel) : '';
 
         card.innerHTML = `
             <div class="recipe-header">
-                <h3>${recipe.name}</h3>
-                <span class="recipe-type">${recipeType}</span>
+                <h3>
+                    ${recipeTitle}
+                    <span class="recipe-mod">${modBadge}</span>
+                </h3>
+                <div class="recipe-meta">
+                    <span class="recipe-type">${recipeTypeLabel}</span>
+                    ${formatBadge ? `<span class="format-badge">${formatBadge}</span>` : ''}
+                </div>
             </div>
             <div class="recipe-content">
                 ${this.renderRecipeVisual(recipe)}
@@ -186,7 +199,7 @@ class RecipeParser {
                     Show Details
                 </button>
                 <div class="recipe-raw-data" id="details-${index}" style="display: none;">
-                    <pre>${JSON.stringify(recipe.data, null, 2)}</pre>
+                    <pre>${this.escapeHtml(JSON.stringify(recipe.data, null, 2))}</pre>
                 </div>
             </div>
         `;
@@ -197,42 +210,34 @@ class RecipeParser {
     renderRecipeVisual(recipe) {
         const machineType = recipe.machineType;
 
-        // Different layouts based on machine type
         if (machineType === 'crafting_table' || recipe.type.includes('crafting')) {
             return this.renderCraftingGrid(recipe);
-        } else if (machineType === 'smelting' || machineType === 'blasting' || machineType === 'smoking') {
-            return this.renderSmelting(recipe);
-        } else {
-            return this.renderGenericMachine(recipe);
         }
+
+        if (machineType === 'smelting' || machineType === 'blasting' || machineType === 'smoking') {
+            return this.renderSmelting(recipe);
+        }
+
+        return this.renderGenericMachine(recipe);
     }
 
     renderCraftingGrid(recipe) {
         if (recipe.format === 'addShaped') {
             return this.renderShapedCrafting(recipe);
-        } else if (recipe.format === 'addShapeless') {
+        }
+
+        if (recipe.format === 'addShapeless') {
             return this.renderShapelessCrafting(recipe);
         }
+
         return this.renderGenericMachine(recipe);
     }
 
     renderShapedCrafting(recipe) {
         try {
-            // Parse the CraftTweaker pattern format
             const pattern = recipe.data.pattern;
             const grid = this.parseCraftingPattern(pattern);
-
-            return `
-                <div class="crafting-recipe">
-                    <div class="crafting-grid">
-                        ${this.renderCraftingGrid3x3(grid)}
-                    </div>
-                    <div class="arrow">→</div>
-                    <div class="crafting-result">
-                        ${this.renderCraftingOutput(recipe.data.output)}
-                    </div>
-                </div>
-            `;
+            return this.renderCraftingBoard(grid, recipe.data.output, 'shaped');
         } catch (error) {
             console.warn('Failed to render shaped crafting recipe:', error);
             return this.renderGenericMachine(recipe);
@@ -242,93 +247,116 @@ class RecipeParser {
     renderShapelessCrafting(recipe) {
         try {
             const ingredients = this.parseCraftingIngredients(recipe.data.ingredients);
-
-            return `
-                <div class="crafting-recipe">
-                    <div class="shapeless-ingredients">
-                        <h4>Ingredients:</h4>
-                        <div class="ingredients-grid">
-                            ${ingredients.map(item => this.renderCraftingSlot(item)).join('')}
-                        </div>
-                    </div>
-                    <div class="arrow">→</div>
-                    <div class="crafting-result">
-                        ${this.renderCraftingOutput(recipe.data.output)}
-                    </div>
-                </div>
-            `;
+            const grid = this.buildShapelessGrid(ingredients);
+            return this.renderCraftingBoard(grid, recipe.data.output, 'shapeless');
         } catch (error) {
             console.warn('Failed to render shapeless crafting recipe:', error);
             return this.renderGenericMachine(recipe);
         }
     }
 
-    parseCraftingPattern(patternString) {
-        // Extract the pattern array from CraftTweaker format
-        // Example: [[item1, item2, item3], [item4, empty, item6], [...]]
+    parseCraftingPattern(patternString = '') {
         try {
-            const grid = Array(3).fill().map(() => Array(3).fill(null));
+            const grid = Array.from({ length: 3 }, () => Array(3).fill(null));
+            if (!patternString) {
+                return grid;
+            }
 
-            // Parse the pattern string (it's a nested array in string format)
-            const matches = patternString.match(/\[([^\]]+)\]/g);
-            if (!matches) return grid;
+            const matches = patternString.match(/\[[^\[\]]*\]/g);
+            if (!matches) {
+                return grid;
+            }
 
-            matches.forEach((row, rowIndex) => {
-                if (rowIndex >= 3) return;
-
-                // Extract items from each row
-                const items = row.slice(1, -1).split(',').map(s => s.trim());
-                items.forEach((item, colIndex) => {
-                    if (colIndex >= 3) return;
-
-                    if (item.includes('IIngredientEmpty') || item === 'null') {
-                        grid[rowIndex][colIndex] = null;
-                    } else {
-                        grid[rowIndex][colIndex] = item;
-                    }
+            matches.slice(0, 3).forEach((row, rowIndex) => {
+                const cells = row.slice(1, -1).split(',').map((cell) => this.normalizeCraftingEntry(cell));
+                cells.slice(0, 3).forEach((cell, colIndex) => {
+                    grid[rowIndex][colIndex] = cell;
                 });
             });
 
             return grid;
         } catch (error) {
             console.warn('Failed to parse crafting pattern:', error);
-            return Array(3).fill().map(() => Array(3).fill(null));
+            return Array.from({ length: 3 }, () => Array(3).fill(null));
         }
     }
 
-    parseCraftingIngredients(ingredientsString) {
+    parseCraftingIngredients(ingredientsString = '') {
         try {
-            // Parse the ingredients array from CraftTweaker format
-            const items = ingredientsString.slice(1, -1).split(',').map(s => s.trim());
-            return items.filter(item => !item.includes('IIngredientEmpty'));
+            const trimmed = ingredientsString.trim();
+            if (!trimmed || trimmed === '[]') {
+                return [];
+            }
+
+            const body = trimmed.replace(/^\[|\]$/g, '');
+            const items = [];
+            let buffer = '';
+            let depth = 0;
+
+            for (const char of body) {
+                if (char === '[') depth += 1;
+                if (char === ']') depth = Math.max(0, depth - 1);
+
+                if (char === ',' && depth === 0) {
+                    items.push(this.normalizeCraftingEntry(buffer));
+                    buffer = '';
+                    continue;
+                }
+
+                buffer += char;
+            }
+
+            if (buffer.trim()) {
+                items.push(this.normalizeCraftingEntry(buffer));
+            }
+
+            return items.filter(Boolean);
         } catch (error) {
             console.warn('Failed to parse crafting ingredients:', error);
             return [];
         }
     }
 
-    renderCraftingGrid3x3(grid) {
+    buildShapelessGrid(ingredients) {
+        const grid = Array.from({ length: 3 }, () => Array(3).fill(null));
+        ingredients.forEach((ingredient, index) => {
+            if (!ingredient) return;
+            const row = Math.floor(index / 3);
+            const col = index % 3;
+            if (row < 3 && col < 3) {
+                grid[row][col] = ingredient;
+            }
+        });
+        return grid;
+    }
+
+    renderCraftingBoard(grid, outputString, layout = 'shaped') {
+        const boardLabel = layout === 'shapeless' ? '<span class="board-label">Shapeless</span>' : '';
         return `
-            <div class="grid-3x3">
-                ${grid.map(row =>
-                    row.map(item => this.renderCraftingSlot(item)).join('')
-                ).join('')}
+            <div class="crafting-board">
+                ${boardLabel}
+                <div class="crafting-grid">
+                    ${grid.map(row => row.map(item => this.renderCraftingSlot(item)).join('')).join('')}
+                </div>
+                <div class="arrow-icon">&rarr;</div>
+                ${this.renderCraftingOutput(outputString)}
             </div>
         `;
     }
 
     renderCraftingSlot(item) {
-        if (!item || item === 'null') {
+        if (!item) {
             return '<div class="crafting-slot empty"></div>';
         }
 
         const icon = this.getCraftingItemIcon(item);
         const name = this.getCraftingItemName(item);
+        const safeName = this.escapeHtml(name);
 
         return `
-            <div class="crafting-slot filled" title="${name}">
+            <div class="crafting-slot" title="${safeName}">
                 <div class="slot-icon">${icon}</div>
-                <div class="slot-name">${name}</div>
+                <div class="slot-name">${safeName}</div>
             </div>
         `;
     }
@@ -336,88 +364,144 @@ class RecipeParser {
     renderCraftingOutput(outputString) {
         const icon = this.getCraftingItemIcon(outputString);
         const name = this.getCraftingItemName(outputString);
+        const amount = this.getOutputAmount(outputString);
+        const label = amount > 1 ? `${name} x${amount}` : name;
+        const safeLabel = this.escapeHtml(label);
 
         return `
-            <div class="crafting-output">
-                <div class="output-slot">
-                    <div class="slot-icon">${icon}</div>
-                    <div class="slot-name">${name}</div>
-                </div>
+            <div class="output-slot" title="${safeLabel}">
+                <div class="slot-icon">${icon}</div>
+                <div class="slot-name">${safeLabel}</div>
             </div>
         `;
+    }
+
+    normalizeCraftingEntry(rawValue) {
+        if (!rawValue) {
+            return null;
+        }
+
+        const trimmed = rawValue.trim();
+        if (!trimmed || trimmed === 'null') {
+            return null;
+        }
+
+        if (trimmed.includes('IIngredientEmpty')) {
+            return null;
+        }
+
+        return trimmed;
     }
 
     getCraftingItemIcon(itemString) {
         if (!itemString) return '';
 
-        const lower = itemString.toLowerCase();
-        if (lower.includes('ingot')) return '🧱';
-        if (lower.includes('ore')) return '⛏️';
-        if (lower.includes('dust')) return '💨';
-        if (lower.includes('plate')) return '📄';
-        if (lower.includes('stick')) return '🪵';
-        if (lower.includes('diamond')) return '💎';
-        if (lower.includes('gold')) return '🪙';
-        if (lower.includes('iron')) return '⚙️';
-        if (lower.includes('copper')) return '🔶';
-        if (lower.includes('leather')) return '🟤';
-        if (lower.includes('string')) return '🧵';
-        if (lower.includes('chest')) return '📦';
-        if (lower.includes('backpack')) return '🎒';
-        return '📦';
+        const canonical = itemString.split('|')[0].trim().toLowerCase();
+        if (canonical.includes('ingot')) return '⛓';
+        if (canonical.includes('nugget')) return '🔩';
+        if (canonical.includes('ore')) return '⛏';
+        if (canonical.includes('dust')) return '🧪';
+        if (canonical.includes('plate')) return '🛡';
+        if (canonical.includes('gear')) return '⚙';
+        if (canonical.includes('rod') || canonical.includes('stick')) return '🪵';
+        if (canonical.includes('gem') || canonical.includes('diamond')) return '💎';
+        if (canonical.includes('redstone')) return '🧱';
+        if (canonical.includes('backpack')) return '🎒';
+        if (canonical.includes('chest')) return '📦';
+        if (canonical.includes('book')) return '📘';
+        if (canonical.includes('bread') || canonical.includes('food')) return '🍞';
+        return '⬛';
     }
 
     getCraftingItemName(itemString) {
         if (!itemString) return '';
 
-        // Extract item name from <item:mod:name> or <tag:category:name> format
-        const itemMatch = itemString.match(/<(?:item|tag):([^>]+)>/);
-        if (itemMatch) {
-            return itemMatch[1].replace(/^[^:]+:/, '').replace(/_/g, ' ');
+        const primary = itemString.split('|')[0].trim();
+        const amountSplit = primary.split('*');
+        const base = amountSplit[0].trim();
+
+        const match = base.match(/<(?:item|tag):([^>]+)>/);
+        if (match) {
+            const pretty = this.prettifyIdentifier(match[1].replace(/^[^:]+:/, ''));
+            return this.capitalizeWords(pretty);
         }
 
-        // Fallback for other formats
-        return itemString.replace(/^[^:]+:/, '').replace(/_/g, ' ').replace(/[<>]/g, '');
+        const cleaned = this.prettifyIdentifier(base.replace(/^[^:]+:/, '').replace(/[<>]/g, ''));
+        return this.capitalizeWords(cleaned);
     }
 
-    renderSmelting(recipe) {
+    getOutputAmount(outputString = '') {
+        const amountMatch = outputString.match(/\*\s*(\d+)/);
+        return amountMatch ? parseInt(amountMatch[1], 10) : 0;
+    }
+
+    getFormatLabel(recipe) {
+        switch (recipe.format) {
+            case 'addShaped':
+                return 'Shaped';
+            case 'addShapeless':
+                return 'Shapeless';
+            case 'addJsonRecipe':
+                return 'JSON';
+            default:
+                return '';
+        }
+    }
+
+    getRecipeDisplayName(name) {
+        if (!name) {
+            return 'Unnamed Recipe';
+        }
+        const cleaned = this.prettifyIdentifier(name.replace(/^[^:]+:/, ''));
+        return this.capitalizeWords(cleaned);
+    }
+
+    getModLabel(mod) {
+        const fallback = mod || 'minecraft';
+        const cleaned = this.prettifyIdentifier(fallback);
+        return this.capitalizeWords(cleaned);
+    }    renderSmelting(recipe) {
         return `
-            <div class="smelting-recipe">
-                <div class="smelting-input">
+            <div class="machine-board">
+                <div class="machine-column">
+                    <h4>Input</h4>
                     ${this.renderItems(recipe.inputs.items)}
                 </div>
-                <div class="arrow">→</div>
-                <div class="smelting-output">
+                <div class="arrow-icon">&rarr;</div>
+                <div class="machine-column">
+                    <h4>Output</h4>
                     ${this.renderItems(recipe.outputs.items)}
                 </div>
             </div>
         `;
     }
 
+
     renderGenericMachine(recipe) {
         const hasInputs = recipe.inputs.items.length > 0 || recipe.inputs.fluids.length > 0;
         const hasOutputs = recipe.outputs.items.length > 0 || recipe.outputs.fluids.length > 0;
 
+        const inputsMarkup = `
+            <div class="machine-column">
+                <h4>Inputs</h4>
+                ${this.renderItems(recipe.inputs.items)}
+                ${this.renderFluids(recipe.inputs.fluids)}
+            </div>
+        `;
+
+        const outputsMarkup = `
+            <div class="machine-column">
+                <h4>Outputs</h4>
+                ${this.renderItems(recipe.outputs.items)}
+                ${this.renderFluids(recipe.outputs.fluids)}
+            </div>
+        `;
+
         return `
-            <div class="generic-recipe">
-                ${hasInputs ? `
-                    <div class="recipe-inputs">
-                        <h4>Inputs:</h4>
-                        ${this.renderItems(recipe.inputs.items)}
-                        ${this.renderFluids(recipe.inputs.fluids)}
-                    </div>
-                ` : ''}
-
-                ${hasInputs && hasOutputs ? '<div class="arrow">→</div>' : ''}
-
-                ${hasOutputs ? `
-                    <div class="recipe-outputs">
-                        <h4>Outputs:</h4>
-                        ${this.renderItems(recipe.outputs.items)}
-                        ${this.renderFluids(recipe.outputs.fluids)}
-                    </div>
-                ` : ''}
-
+            <div class="machine-board">
+                ${hasInputs ? inputsMarkup : ''}
+                ${hasInputs && hasOutputs ? '<div class="arrow-icon">&rarr;</div>' : ''}
+                ${hasOutputs ? outputsMarkup : ''}
                 ${this.renderRecipeProperties(recipe)}
             </div>
         `;
@@ -433,7 +517,7 @@ class RecipeParser {
                         <div class="item-icon">${this.getItemIcon(item)}</div>
                         <div class="item-info">
                             <div class="item-name">${this.getItemName(item)}</div>
-                            ${item.amount ? `<div class="item-amount">×${item.amount}</div>` : ''}
+                            ${item.amount ? `<div class="item-amount">Ã—${item.amount}</div>` : ''}
                         </div>
                     </div>
                 `).join('')}
@@ -448,7 +532,7 @@ class RecipeParser {
             <div class="fluids-list">
                 ${fluids.map(fluid => `
                     <div class="fluid-slot">
-                        <div class="fluid-icon">🧪</div>
+                        <div class="fluid-icon">ðŸ§ª</div>
                         <div class="fluid-info">
                             <div class="fluid-name">${this.getFluidName(fluid)}</div>
                             ${fluid.amount ? `<div class="fluid-amount">${fluid.amount}mb</div>` : ''}
@@ -475,40 +559,54 @@ class RecipeParser {
 
         if (properties.length === 0) return '';
 
+        const markup = properties.map((prop) => `<span class="property">${this.escapeHtml(prop)}</span>`).join('');
         return `
             <div class="recipe-properties">
-                ${properties.map(prop => `<span class="property">${prop}</span>`).join('')}
+                ${markup}
             </div>
         `;
     }
 
     getItemIcon(item) {
-        // Simple icon mapping - could be expanded
-        if (item.item && item.item.includes('ingot')) return '🧱';
-        if (item.item && item.item.includes('ore')) return '⛏️';
-        if (item.item && item.item.includes('dust')) return '💨';
-        if (item.item && item.item.includes('plate')) return '📄';
-        if (item.tag && item.tag.includes('ingots')) return '🧱';
-        if (item.tag && item.tag.includes('ores')) return '⛏️';
-        return '📦';
-    }
-
-    getItemName(item) {
+        const base = item ? (item.item || item.tag || '') : '';
+        const source = base.toLowerCase();
+        if (source.includes('ingot')) return '⛓';
+        if (source.includes('nugget')) return '🔩';
+        if (source.includes('ore')) return '⛏';
+        if (source.includes('dust')) return '🧪';
+        if (source.includes('plate')) return '🛡';
+        if (source.includes('gear')) return '⚙';
+        if (source.includes('rod') || source.includes('stick')) return '🪵';
+        if (source.includes('gem') || source.includes('diamond')) return '💎';
+        if (source.includes('backpack')) return '🎒';
+        if (source.includes('chest')) return '📦';
+        return '⬛';
+    }\n\n    getItemName(item) {
+        if (!item) {
+            return 'Unknown Item';
+        }
         if (item.item) {
-            return item.item.replace(/^[^:]+:/, '').replace(/_/g, ' ');
+            const cleaned = this.prettifyIdentifier(item.item.replace(/^[^:]+:/, ''));
+            return this.capitalizeWords(cleaned);
         }
         if (item.tag) {
-            return `#${item.tag}`;
+            const cleaned = this.prettifyIdentifier(item.tag.replace(/^[^:]+:/, ''));
+            return `#${this.capitalizeWords(cleaned)}`;
         }
         return 'Unknown Item';
     }
 
     getFluidName(fluid) {
+        if (!fluid) {
+            return 'Unknown Fluid';
+        }
         if (fluid.fluid) {
-            return fluid.fluid.replace(/^[^:]+:/, '').replace(/_/g, ' ');
+            const cleaned = this.prettifyIdentifier(fluid.fluid.replace(/^[^:]+:/, ''));
+            return this.capitalizeWords(cleaned);
         }
         if (fluid.id) {
-            return fluid.id.replace(/^[^:]+:/, '').replace(/_/g, ' ');
+            const cleaned = this.prettifyIdentifier(fluid.id.replace(/^[^:]+:/, ''));
+            return this.capitalizeWords(cleaned);
         }
         return 'Unknown Fluid';
     }
@@ -525,7 +623,35 @@ class RecipeParser {
         document.getElementById('recipe-count').textContent = `(${total} recipes)`;
     }
 
-    renderPagination() {
+    escapeHtml(value) {
+        if (value === null || value === undefined) {
+            return '';
+        }
+        return String(value).replace(/[&<>"']/g, (char) => {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            };
+            return map[char] || char;
+        });
+    }
+
+    prettifyIdentifier(value) {
+        if (!value) {
+            return '';
+        }
+        return value.replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
+    capitalizeWords(value) {
+        if (!value) {
+            return '';
+        }
+        return value.replace(/\b(\w)/g, (match) => match.toUpperCase());
+    }    renderPagination() {
         // Simple pagination - could be enhanced
         const container = document.getElementById('recipes-container');
 
@@ -573,3 +699,27 @@ let app;
 document.addEventListener('DOMContentLoaded', () => {
     app = new RecipeParser();
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

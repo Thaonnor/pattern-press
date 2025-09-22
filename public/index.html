@@ -1,16 +1,16 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CraftTweaker Recipe Parser</title>
+    <title>Pattern Press • CraftTweaker Recipe Explorer</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>CraftTweaker Recipe Parser</h1>
-            <p>Parse and visualize CraftTweaker recipe dumps</p>
+        <header class="app-header">
+            <div class="title-badge">Pattern Press</div>
+            <p class="subtitle">CraftTweaker recipe explorer forged for modded Minecraft</p>
         </header>
 
         <main>
@@ -18,8 +18,8 @@
                 <h2>Upload CraftTweaker Log</h2>
                 <div class="upload-area" id="upload-area">
                     <div class="upload-content">
-                        <div class="upload-icon">📁</div>
-                        <p>Drop your crafttweaker.log file here or click to browse</p>
+                        <div class="upload-icon">⬆</div>
+                        <p>Drop your <code>crafttweaker.log</code> here or click to browse</p>
                         <input type="file" id="file-input" accept=".log,.txt" style="display: none;">
                         <button class="upload-button" onclick="document.getElementById('file-input').click()">
                             Choose File
@@ -32,26 +32,29 @@
                 <h2>Filter Recipes</h2>
                 <div class="filter-controls">
                     <div class="filter-group">
-                        <label for="recipe-type-filter">Recipe Type:</label>
+                        <label for="recipe-type-filter">Recipe Type</label>
                         <select id="recipe-type-filter">
                             <option value="">All Types</option>
                         </select>
                     </div>
                     <div class="filter-group">
-                        <label for="search-filter">Search:</label>
-                        <input type="text" id="search-filter" placeholder="Search recipes...">
-                    </div>
-                    <div class="filter-group">
-                        <label for="mod-filter">Mod:</label>
+                        <label for="mod-filter">Mod</label>
                         <select id="mod-filter">
                             <option value="">All Mods</option>
                         </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="search-filter">Search</label>
+                        <input type="text" id="search-filter" placeholder="Search recipes, items, ingredients...">
                     </div>
                 </div>
             </section>
 
             <section class="recipes-section" id="recipes-section" style="display: none;">
-                <h2>Recipes <span id="recipe-count"></span></h2>
+                <div class="section-heading">
+                    <h2>Recipes</h2>
+                    <span id="recipe-count" class="recipe-count"></span>
+                </div>
                 <div id="recipes-container"></div>
             </section>
         </main>
