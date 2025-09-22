@@ -55,9 +55,26 @@
 - **Functions**: `processSegments()`, `loadSegments()`
 
 #### Handlers (`src/parsers/handlers/`)
+**Core Recipe Types:**
 - **JSON Handler** (`jsonCraftingHandler.js`) - Processes `.addJsonRecipe()` calls
 - **Shaped Handler** (`shapedCraftingHandler.js`) - Handles shaped crafting recipes
 - **Shapeless Handler** (`shapelessCraftingHandler.js`) - Handles shapeless crafting recipes
+
+**Machine Recipe Types:**
+- **Blast Furnace Handler** (`blastFurnaceHandler.js`) - Processes blast furnace recipes
+- **Campfire Handler** (`campfireHandler.js`) - Handles campfire cooking recipes
+- **Smelting Handler** (`smeltingHandler.js`) - Processes furnace smelting recipes
+- **Smoking Handler** (`smokingHandler.js`) - Handles smoker recipes
+- **Smithing Handler** (`smithingHandler.js`) - Processes smithing table recipes
+
+**Modded Machine Types:**
+- **Cutting Handler** (`cuttingHandler.js`) - Handles Farmer's Delight cutting board recipes
+- **Cooking Handler** (`cookingHandler.js`) - Processes Farmer's Delight cooking pot recipes
+- **Chemical Conversion Handler** (`chemicalConversionHandler.js`) - Mekanism item-to-chemical conversion
+- **Centrifuging Handler** (`centrifugingHandler.js`) - Mekanism isotopic centrifuge separation
+- **Activating Handler** (`activatingHandler.js`) - Mekanism solar neutron activator transformation
+
+**Current Status: 13 handlers providing 100% parsing coverage (772/772 recipes)**
 
 ### Frontend (`public/`)
 - **HTML** (`index.html`) - Single page application shell
@@ -65,9 +82,11 @@
 - **JavaScript** (`assets/js/app.js`) - Client-side interaction logic
 
 ### Testing (`test/`)
-- **Framework**: Tape testing framework
-- **Coverage**: Server routes, parsing utilities, segmentation logic
+- **Framework**: Jest testing framework
+- **Coverage**: All handlers, server routes, parsing utilities, segmentation logic
 - **Command**: `npm test`
+- **Handler Tests**: Comprehensive test suites for all 13 recipe format handlers
+- **Test Structure**: Unit tests with real-world recipe examples and edge case coverage
 
 ### CLI Tools
 - **Log Segmenter**: `node src/log-segmenter.js <log-path> --out-dir data/segments --prefix <label>`
@@ -113,9 +132,9 @@
 - **Name**: pattern-press
 - **Scripts**:
   - `npm start` - Runs web server
-  - `npm test` - Executes Tape tests
+  - `npm test` - Executes Jest tests
 - **Dependencies**: express, cors, multer
-- **DevDependencies**: tape, supertest, proxyquire
+- **DevDependencies**: jest, supertest
 
 ### File Structure
 ```
