@@ -346,32 +346,39 @@
 
     renderCraftingSlot(item) {
         if (!item) {
-            return '<div class="crafting-slot empty"></div>';
+            return '<div class="crafting-slot empty"><span class="slot-placeholder">Empty</span></div>';
         }
 
-        const icon = this.getCraftingItemIcon(item);
         const name = this.getCraftingItemName(item);
         const safeName = this.escapeHtml(name);
+        const badge = this.getCraftingItemIcon(item);
 
         return `
             <div class="crafting-slot" title="${safeName}">
-                <div class="slot-icon">${icon}</div>
-                <div class="slot-name">${safeName}</div>
+                <div class="slot-chip">
+                    <span class="slot-badge">${badge}</span>
+                    <span class="slot-label">${safeName}</span>
+                </div>
             </div>
         `;
     }
 
     renderCraftingOutput(outputString) {
-        const icon = this.getCraftingItemIcon(outputString);
         const name = this.getCraftingItemName(outputString);
         const amount = this.getOutputAmount(outputString);
         const label = amount > 1 ? `${name} x${amount}` : name;
         const safeLabel = this.escapeHtml(label);
+        const badge = this.getCraftingItemIcon(outputString);
 
         return `
             <div class="output-slot" title="${safeLabel}">
-                <div class="slot-icon">${icon}</div>
-                <div class="slot-name">${safeLabel}</div>
+                <div class="slot-chip">
+                    <span class="slot-badge highlight">${badge}</span>
+                    <div class="slot-meta">
+                        <span class="slot-label">${safeLabel}</span>
+                        ${amount > 1 ? `<span class="slot-subtext">Stack of ${amount}</span>` : ''}
+                    </div>
+                </div>
             </div>
         `;
     }
@@ -394,23 +401,8 @@
     }
 
     getCraftingItemIcon(itemString) {
-        if (!itemString) return '';
-
-        const canonical = itemString.split('|')[0].trim().toLowerCase();
-        if (canonical.includes('ingot')) return '⛓';
-        if (canonical.includes('nugget')) return '🔩';
-        if (canonical.includes('ore')) return '⛏';
-        if (canonical.includes('dust')) return '🧪';
-        if (canonical.includes('plate')) return '🛡';
-        if (canonical.includes('gear')) return '⚙';
-        if (canonical.includes('rod') || canonical.includes('stick')) return '🪵';
-        if (canonical.includes('gem') || canonical.includes('diamond')) return '💎';
-        if (canonical.includes('redstone')) return '🧱';
-        if (canonical.includes('backpack')) return '🎒';
-        if (canonical.includes('chest')) return '📦';
-        if (canonical.includes('book')) return '📘';
-        if (canonical.includes('bread') || canonical.includes('food')) return '🍞';
-        return '⬛';
+        const name = this.getCraftingItemName(itemString);
+        return this.getBadgeLetters(name);
     }
 
     getCraftingItemName(itemString) {
@@ -568,20 +560,11 @@
     }
 
     getItemIcon(item) {
-        const base = item ? (item.item || item.tag || '') : '';
-        const source = base.toLowerCase();
-        if (source.includes('ingot')) return '⛓';
-        if (source.includes('nugget')) return '🔩';
-        if (source.includes('ore')) return '⛏';
-        if (source.includes('dust')) return '🧪';
-        if (source.includes('plate')) return '🛡';
-        if (source.includes('gear')) return '⚙';
-        if (source.includes('rod') || source.includes('stick')) return '🪵';
-        if (source.includes('gem') || source.includes('diamond')) return '💎';
-        if (source.includes('backpack')) return '🎒';
-        if (source.includes('chest')) return '📦';
-        return '⬛';
-    }\n\n    getItemName(item) {
+        const baseName = this.getItemName(item);
+        return this.getBadgeLetters(baseName);
+    }
+
+    getItemName(item) {
         if (!item) {
             return 'Unknown Item';
         }
@@ -594,6 +577,25 @@
             return `#${this.capitalizeWords(cleaned)}`;
         }
         return 'Unknown Item';
+    }
+
+    getBadgeLetters(label = '') {
+        if (!label) {
+            return '–';
+        }
+
+        const words = label.split(/\s+/).filter(Boolean);
+        if (words.length === 0) {
+            return '–';
+        }
+
+        if (words.length === 1) {
+            return words[0].slice(0, 2).toUpperCase();
+        }
+
+        const first = words[0].charAt(0);
+        const second = words[1].charAt(0);
+        return `${first}${second}`.toUpperCase();
     }
 
     getFluidName(fluid) {
