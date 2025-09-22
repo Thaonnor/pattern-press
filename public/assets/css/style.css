@@ -23,8 +23,14 @@
 }
 
 body {
-    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', sans-serif;
-    background: radial-gradient(circle at 20% 20%, #1f2d16 0%, #12180d 45%, #090d06 100%);
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande',
+        sans-serif;
+    background: radial-gradient(
+        circle at 20% 20%,
+        #1f2d16 0%,
+        #12180d 45%,
+        #090d06 100%
+    );
     color: var(--text-primary);
     min-height: 100vh;
     padding: 40px 0;
@@ -49,10 +55,15 @@ body {
     font-size: 2.4rem;
     font-weight: 700;
     letter-spacing: 1px;
-    background: linear-gradient(135deg, rgba(60, 94, 38, 0.9), rgba(34, 54, 25, 0.9));
+    background: linear-gradient(
+        135deg,
+        rgba(60, 94, 38, 0.9),
+        rgba(34, 54, 25, 0.9)
+    );
     border: 2px solid var(--panel-border);
     border-radius: 10px;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45), inset 0 2px 6px rgba(255, 255, 255, 0.05);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45),
+        inset 0 2px 6px rgba(255, 255, 255, 0.05);
     text-transform: uppercase;
 }
 
@@ -92,7 +103,8 @@ h2 {
     border-radius: 12px;
     padding: 48px 24px;
     background: rgba(28, 36, 24, 0.8);
-    transition: transform var(--transition), border-color var(--transition), background var(--transition);
+    transition: transform var(--transition), border-color var(--transition),
+        background var(--transition);
     cursor: pointer;
 }
 
@@ -267,6 +279,56 @@ h2 {
     color: var(--accent);
 }
 
+.recipe-title-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: rgba(123, 212, 90, 0.08);
+    border-bottom: 1px solid rgba(123, 212, 90, 0.15);
+    margin: -24px -24px 24px -24px;
+    cursor: pointer;
+    transition: background var(--transition);
+}
+
+.recipe-title-header:hover {
+    background: rgba(123, 212, 90, 0.12);
+}
+
+.recipe-title-header h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.collapse-arrow {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(123, 212, 90, 0.2);
+    border: 1px solid rgba(123, 212, 90, 0.3);
+    border-radius: 50%;
+    color: var(--accent);
+    font-size: 14px;
+    font-weight: bold;
+    transition: transform var(--transition), background var(--transition);
+}
+
+.recipe-card.collapsed .collapse-arrow {
+    transform: rotate(-90deg);
+}
+
+.recipe-card.collapsed .recipe-body {
+    display: none;
+}
+
+.recipe-body {
+    transition: all var(--transition);
+}
+
 .recipe-content {
     display: grid;
     gap: 20px;
@@ -276,7 +338,8 @@ h2 {
     position: relative;
     display: flex;
     align-items: center;
-    gap: 20px;
+    justify-content: space-between;
+    gap: 16px;
     padding: 18px;
     background: rgba(12, 16, 10, 0.7);
     border: 1px solid var(--panel-border);
@@ -301,9 +364,9 @@ h2 {
 
 .crafting-grid {
     display: grid;
-    grid-template-columns: repeat(3, 160px);
-    gap: 14px;
-    padding: 16px;
+    grid-template-columns: repeat(3, 180px);
+    gap: 12px;
+    padding: 14px;
     background: rgba(0, 0, 0, 0.25);
     border-radius: 12px;
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
@@ -315,7 +378,11 @@ h2 {
     min-height: 64px;
     border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.06);
-    background: linear-gradient(150deg, rgba(53, 70, 40, 0.78), rgba(29, 36, 23, 0.92));
+    background: linear-gradient(
+        150deg,
+        rgba(53, 70, 40, 0.78),
+        rgba(29, 36, 23, 0.92)
+    );
     display: flex;
     align-items: center;
     justify-content: flex-start;
@@ -324,12 +391,15 @@ h2 {
 }
 
 .output-slot {
-    min-width: 140px;
-    max-width: 200px;
+    width: 180px;
     min-height: 64px;
     border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.06);
-    background: linear-gradient(150deg, rgba(82, 61, 40, 0.85), rgba(43, 33, 22, 0.95));
+    background: linear-gradient(
+        150deg,
+        rgba(82, 61, 40, 0.85),
+        rgba(43, 33, 22, 0.95)
+    );
     display: flex;
     align-items: center;
     justify-content: flex-start;
@@ -348,7 +418,7 @@ h2 {
 .slot-chip {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     width: 100%;
 }
 
@@ -502,7 +572,8 @@ h2 {
     padding: 8px 16px;
     font-size: 0.9rem;
     cursor: pointer;
-    transition: background var(--transition), color var(--transition), border var(--transition);
+    transition: background var(--transition), color var(--transition),
+        border var(--transition);
 }
 
 .details-btn:hover {
@@ -695,8 +766,7 @@ h2 {
     }
 
     .output-slot {
-        min-width: 120px;
-        max-width: 300px;
+        width: 120px;
     }
 
     .recipe-header {
@@ -769,4 +839,3 @@ h2 {
     line-height: 1.4;
     color: var(--text-muted);
 }
-

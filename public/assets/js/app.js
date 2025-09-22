@@ -183,35 +183,40 @@
         const recipeDescription = this.getRecipeDescription(recipe);
 
         card.innerHTML = `
-            <div class="recipe-header">
-                <div class="recipe-title-section">
-                    <h3>${recipeTitle}</h3>
-                    <div class="recipe-id-full">Recipe ID: <code>${fullRecipeId}</code></div>
-                    ${recipeDescription ? `<div class="recipe-description">${this.escapeHtml(recipeDescription)}</div>` : ''}
-                    <span class="recipe-mod-label">From: <span class="recipe-mod">${modBadge}</span></span>
-                </div>
-                <div class="recipe-meta">
-                    <div class="recipe-type-section">
-                        <span class="recipe-type-label">Recipe Type</span>
-                        <span class="recipe-type">${recipeTypeLabel}</span>
+            <div class="recipe-title-header" onclick="app.toggleRecipeCard(${index})">
+                <h2>${recipeTitle}</h2>
+                <div class="collapse-arrow">▼</div>
+            </div>
+            <div class="recipe-body">
+                <div class="recipe-header">
+                    <div class="recipe-title-section">
+                        <div class="recipe-id-full">Recipe ID: <code>${fullRecipeId}</code></div>
+                        ${recipeDescription ? `<div class="recipe-description">${this.escapeHtml(recipeDescription)}</div>` : ''}
+                        <span class="recipe-mod-label">From: <span class="recipe-mod">${modBadge}</span></span>
                     </div>
-                    ${formatBadge ? `
-                        <div class="format-section">
-                            <span class="format-label">Implementation</span>
-                            <span class="format-badge">${formatBadge}</span>
+                    <div class="recipe-meta">
+                        <div class="recipe-type-section">
+                            <span class="recipe-type-label">Recipe Type</span>
+                            <span class="recipe-type">${recipeTypeLabel}</span>
                         </div>
-                    ` : ''}
+                        ${formatBadge ? `
+                            <div class="format-section">
+                                <span class="format-label">Implementation</span>
+                                <span class="format-badge">${formatBadge}</span>
+                            </div>
+                        ` : ''}
+                    </div>
                 </div>
-            </div>
-            <div class="recipe-content">
-                ${this.renderRecipeVisual(recipe)}
-            </div>
-            <div class="recipe-details">
-                <button class="details-btn" onclick="app.toggleDetails(${index})">
-                    Show Details
-                </button>
-                <div class="recipe-raw-data" id="details-${index}" style="display: none;">
-                    <pre>${this.escapeHtml(JSON.stringify(recipe.data, null, 2))}</pre>
+                <div class="recipe-content">
+                    ${this.renderRecipeVisual(recipe)}
+                </div>
+                <div class="recipe-details">
+                    <button class="details-btn" onclick="app.toggleDetails(${index})">
+                        Show Details
+                    </button>
+                    <div class="recipe-raw-data" id="details-${index}" style="display: none;">
+                        <pre>${this.escapeHtml(JSON.stringify(recipe.data, null, 2))}</pre>
+                    </div>
                 </div>
             </div>
         `;
@@ -797,6 +802,15 @@
             pagination.appendChild(nextButton);
 
             container.appendChild(pagination);
+        }
+    }
+
+    toggleRecipeCard(index) {
+        const recipeCards = document.querySelectorAll('.recipe-card');
+        const card = recipeCards[index];
+
+        if (card) {
+            card.classList.toggle('collapsed');
         }
     }
 
