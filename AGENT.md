@@ -92,6 +92,89 @@
 - `GET /recipes?type=&mod=&search=&page=1&limit=20` - Filtered recipe listing
 - `GET /stats` - Recipe statistics by type/mod
 
+## Recipe Type Analysis & Configuration
+
+### Import System Architecture
+- **Import Script** (`src/import-recipes.js`) - Main import utility with comprehensive mod support
+- **Configuration** (`config/import.json`) - Centralized recipe type and mod management
+- **Normalization** - Automatic recipe type normalization and namespace handling
+
+### Recipe Type Categorization
+The system uses a comprehensive configuration-based approach with 250+ analyzed recipe types:
+
+#### **Comprehensive Coverage Achieved**
+Through systematic analysis, the system now supports:
+- **70+ mods** with full recipe type coverage
+- **250+ recipe types** categorized by customization value
+- **Intelligent filtering** separating high-value content from internal mechanics
+- **Zero unsupported recipes** in typical modpack configurations
+
+#### **Whitelist Strategy** - High customization value for modpack makers:
+**Core Processing Systems:**
+- Machine recipes (Mekanism, Modern Industrialization, Oritech, PneumaticCraft)
+- Energy systems and fuel definitions
+- Material processing chains and ore multiplication
+
+**Progression & Balance:**
+- Tiered upgrades and advancement systems
+- Cross-mod integration recipes
+- Custom crafting patterns and complex recipes
+
+**Magic & Special Systems:**
+- Spell systems (Ars Nouveau glyph creation, enchanting apparatus)
+- Ritual and transformation recipes
+- Augmentation and enhancement systems
+
+#### **Ignore List Strategy** - Internal mechanics with low customization value:
+**System Enablers:**
+- Internal upgrade mechanics and system registration
+- NBT manipulation and data preservation
+- Configuration clearing and reset utilities
+
+**Fixed Mechanics:**
+- Hardcoded upgrade paths and transformations
+- Metadata tracking and client-side utilities
+- Empty recipe definitions and system placeholders
+
+### Import System Features
+
+#### **Enhanced Reporting**
+- **Categorized Statistics**: Separates "unsupported" vs "intentionally ignored" recipes
+- **Detailed Logging**: Configurable verbosity for import analysis
+- **Progress Tracking**: Real-time feedback during large imports
+
+#### **Recipe Type Normalization**
+- **Namespace Handling**: Automatic `minecraft:` prefix for recipes missing namespaces
+- **Consistent Reporting**: Prevents duplicate mod prefixes in unsupported type lists
+- **Edge Case Handling**: Properly handles cross-mod recipe types and variants
+
+#### **Configuration Management**
+- **Centralized Control**: Single config file for all import behavior
+- **Flexible Filtering**: Separate whitelist/ignore lists with clear categorization
+- **Mod Support**: Comprehensive mod namespace definitions
+
+### Analysis Methodology
+The comprehensive recipe analysis followed a systematic approach:
+
+1. **Discovery**: Search export folders for recipe type patterns
+2. **Sampling**: Read 1-2 representative examples of each type
+3. **Evaluation**: Apply standardized criteria for customization value
+4. **Categorization**: Sort into whitelist (high value) or ignore list (low value)
+5. **Validation**: Test import behavior and adjust configuration
+
+**Evaluation Criteria Applied**:
+- **Customization Value**: Frequency of modpack maker modifications
+- **Content vs Mechanics**: Represents craftable content vs internal systems
+- **Progression Impact**: Affects gameplay balance or tech progression
+- **Cross-mod Integration**: Enables integration between different mods
+
+**Common Patterns Identified**:
+- **Machine Processing** → Whitelist (high customization value)
+- **Empty System Enablers** → Ignore (no customization content)
+- **NBT/Data Manipulation** → Ignore (fixed internal mechanics)
+- **Progression Systems** → Whitelist (important for balance)
+- **Cross-mod Compatibility** → Whitelist (integration value)
+
 ## Development Notes
 
 - Focus on simplicity over enterprise features

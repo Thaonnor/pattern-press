@@ -72,6 +72,7 @@ async function importRecipes(inputPath) {
         total: 0,
         imported: 0,
         skipped: 0,
+        ignored: 0,
         errors: 0,
         byMod: {},
         skippedMods: new Set(),
@@ -85,7 +86,12 @@ async function importRecipes(inputPath) {
         try {
             const recipeData = readJsonFile(filePath);
             const mod = extractModNamespace(filePath, recipeData);
-            const recipeType = recipeData.type || 'unknown';
+            let recipeType = recipeData.type || 'unknown';
+
+            // Normalize recipe type - add minecraft: prefix if missing
+            if (recipeType && !recipeType.includes(':')) {
+                recipeType = `minecraft:${recipeType}`;
+            }
             const fileName = path.basename(filePath, '.json');
 
             stats.total++;
@@ -94,14 +100,18 @@ async function importRecipes(inputPath) {
             const importCheck = shouldImportRecipe(mod, recipeType, config);
 
             if (!importCheck.allowed) {
-                stats.skipped++;
-
-                if (importCheck.reason === 'mod not supported') {
-                    stats.skippedMods.add(mod);
-                } else if (importCheck.reason === 'recipe type ignored' || importCheck.reason === 'mod ignored') {
-                    // Don't add ignored items to the unsupported lists
+                if (importCheck.reason === 'recipe type ignored' || importCheck.reason === 'mod ignored') {
+                    stats.ignored++;
                 } else {
-                    stats.skippedTypes.add(`${mod}:${recipeType}`);
+                    stats.skipped++;
+
+                    if (importCheck.reason === 'mod not supported') {
+                        stats.skippedMods.add(mod);
+                    } else {
+                        // Only add mod prefix if recipe type doesn't already have a namespace
+                        const reportedType = recipeType.includes(':') ? recipeType : `${mod}:${recipeType}`;
+                        stats.skippedTypes.add(reportedType);
+                    }
                 }
 
                 if (config.logging.logSkipped) {
@@ -153,7 +163,8 @@ async function importRecipes(inputPath) {
     console.log(`\n📊 Import Summary:`);
     console.log(`   📦 Total files: ${stats.total}`);
     console.log(`   ✅ Imported: ${stats.imported}`);
-    console.log(`   ⚠️  Skipped: ${stats.skipped}`);
+    console.log(`   ⚠️  Unsupported: ${stats.skipped}`);
+    console.log(`   🚫 Ignored: ${stats.ignored}`);
     console.log(`   ❌ Errors: ${stats.errors}`);
 
     if (stats.skippedMods.size > 0) {
