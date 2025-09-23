@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pattern Press</title>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #1a1a1a;
+            color: #e5e5e5;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2d5a2d 0%, #1a3d1a 100%);
+            color: #e5e5e5;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            border: 2px solid #404040;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .header p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .controls {
+            background: #3a3a3a;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            margin-bottom: 2rem;
+            border: 1px solid #4a4a4a;
+        }
+
+        .filter-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-section label {
+            font-weight: 600;
+            color: #e5e5e5;
+        }
+
+        .filter-section select {
+            padding: 0.5rem;
+            border: 1px solid #5a5a5a;
+            border-radius: 4px;
+            background: #2a2a2a;
+            color: #e5e5e5;
+            font-size: 0.9rem;
+            min-width: 200px;
+        }
+
+        .filter-section select:focus {
+            outline: none;
+            border-color: #00aa00;
+            box-shadow: 0 0 0 2px rgba(0, 170, 0, 0.3);
+        }
+
+        .recipe-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .recipe-card {
+            background: #3a3a3a;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            border: 1px solid #4a4a4a;
+        }
+
+        .recipe-header {
+            background: #2d2d2d;
+            padding: 1rem;
+            border-bottom: 1px solid #4a4a4a;
+        }
+
+        .recipe-header h3 {
+            margin: 0;
+            color: #e5e5e5;
+            font-size: 1.1rem;
+        }
+
+        .recipe-meta {
+            font-size: 0.9rem;
+            color: #b0b0b0;
+            margin-top: 0.25rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: normal;
+            line-height: 1;
+            color: white;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.375rem;
+        }
+
+        .badge-recipe-id {
+            background-color: #5dade2;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            letter-spacing: 0.025em;
+            color: #000;
+        }
+
+        .badge-mod {
+            background-color: #00aa00;
+            color: #000;
+        }
+
+        .badge-type {
+            background-color: #ffaa00;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            color: #000;
+        }
+
+        .recipe-badges {
+            margin-top: 0.5rem;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.5rem 2rem;
+            align-items: start;
+        }
+
+        .recipe-badges .badge-group:nth-child(1),
+        .recipe-badges .badge-group:nth-child(2),
+        .recipe-badges .badge-group:nth-child(3) {
+            grid-column: 1;
+        }
+
+        .recipe-badges .badge-group:nth-child(n+4) {
+            grid-column: 2;
+            grid-row: 1;
+        }
+
+        .recipe-badges .badge-group:nth-child(5) {
+            grid-row: 2;
+        }
+
+        .recipe-badges .badge-group:nth-child(6) {
+            grid-row: 3;
+        }
+
+        .badge-group {
+            display: flex;
+            align-items: baseline;
+            gap: 0.25rem;
+            justify-content: flex-start;
+        }
+
+        .badge-label {
+            font-size: 0.8rem;
+            color: #b0b0b0;
+            font-weight: normal;
+            line-height: 1;
+            min-width: 80px;
+        }
+
+        .additional-badges {
+            margin: 1rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: flex-start;
+        }
+
+        .recipe-visualization {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .badge-category {
+            background-color: #4a90e2;
+            color: white;
+        }
+
+        .badge-time {
+            background-color: #f39c12;
+            color: white;
+        }
+
+        .badge-xp {
+            background-color: #27ae60;
+            color: white;
+        }
+
+        /* Smithing Recipe Styles */
+        .smithing-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-shrink: 0;
+            padding: 2rem;
+        }
+
+        .smithing-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background: linear-gradient(135deg, #8B4513, #A0522D);
+            border: 3px solid #654321;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .smithing-slot {
+            background: linear-gradient(135deg, #2a2a2a, #3a3a3a);
+            border: 2px solid #4a4a4a;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            color: #e5e5e5;
+            text-align: center;
+            padding: 12px 16px;
+            word-break: break-word;
+            overflow: hidden;
+            line-height: 1.3;
+            min-height: 60px;
+            min-width: 120px;
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.1);
+            position: relative;
+        }
+
+        .smithing-slot.item {
+            background: linear-gradient(135deg, #2a2a2a, #3a3a3a);
+            border-color: #4a4a4a;
+            color: #e5e5e5;
+        }
+
+        .smithing-slot.tag {
+            background: linear-gradient(135deg, #2a3a2a, #3a4a3a);
+            border-color: #4a5a4a;
+            color: #90ee90;
+        }
+
+        .smithing-arrow {
+            font-size: 2rem;
+            color: #ffaa00;
+            text-shadow: 0 0 6px rgba(255, 170, 0, 0.5);
+        }
+
+        .smithing-result {
+            background: linear-gradient(135deg, #4a0e4e, #2d0831);
+            border: 2px solid #8b5cf6;
+            border-radius: 8px;
+            padding: 20px;
+            font-size: 0.95rem;
+            color: #e5e5e5;
+            text-align: center;
+            min-width: 140px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);
+            position: relative;
+        }
+
+        /* Shapeless Crafting Styles */
+        .shapeless-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            flex-shrink: 0;
+            padding: 2rem;
+        }
+
+        .shapeless-ingredients {
+            background: linear-gradient(135deg, #8B4513, #A0522D);
+            border: 3px solid #654321;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.3);
+            max-width: 300px;
+        }
+
+        .ingredient-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .ingredient-slot {
+            background: linear-gradient(135deg, #2a2a2a, #3a3a3a);
+            border: 2px solid #4a4a4a;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: #e5e5e5;
+            text-align: center;
+            padding: 8px 12px;
+            word-break: break-word;
+            overflow: hidden;
+            line-height: 1.2;
+            min-height: 40px;
+            min-width: 80px;
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.1);
+            position: relative;
+        }
+
+        .ingredient-slot.item {
+            background: linear-gradient(135deg, #2a2a2a, #3a3a3a);
+            border-color: #4a4a4a;
+            color: #e5e5e5;
+        }
+
+        .ingredient-slot.tag {
+            background: linear-gradient(135deg, #2a3a2a, #3a4a3a);
+            border-color: #4a5a4a;
+            color: #90ee90;
+        }
+
+        .shapeless-arrow {
+            font-size: 2rem;
+            color: #ffaa00;
+            text-shadow: 0 0 6px rgba(255, 170, 0, 0.5);
+        }
+
+        .shapeless-result {
+            background: linear-gradient(135deg, #4a0e4e, #2d0831);
+            border: 2px solid #8b5cf6;
+            border-radius: 8px;
+            padding: 20px;
+            font-size: 0.95rem;
+            color: #e5e5e5;
+            text-align: center;
+            min-width: 140px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);
+            position: relative;
+        }
+
+        .recipe-json {
+            padding: 1rem;
+            background: #f8f9fa;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.8rem;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .pagination button {
+            padding: 0.5rem 1rem;
+            border: 1px solid #4a4a4a;
+            background: #2a2a2a;
+            color: #e5e5e5;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #3a3a3a;
+            border-color: #5a5a5a;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #b0b0b0;
+        }
+
+        .recipe-content {
+            display: flex;
+            gap: 2rem;
+            margin: 1rem 0;
+            align-items: flex-start;
+        }
+
+        .recipe-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .crafting-container {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 2rem;
+            flex-shrink: 0;
+        }
+
+        .crafting-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 8px;
+            width: 520px;
+            height: 220px;
+            background: linear-gradient(135deg, #8B4513, #A0522D);
+            border: 3px solid #654321;
+            border-radius: 8px;
+            padding: 16px;
+            flex-shrink: 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.3);
+            align-content: center;
+            justify-content: center;
+        }
+
+        .crafting-slot {
+            background: linear-gradient(135deg, #2a2a2a, #3a3a3a);
+            border: 2px solid #4a4a4a;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            color: #e5e5e5;
+            text-align: center;
+            padding: 8px 12px;
+            word-break: break-word;
+            overflow: hidden;
+            line-height: 1.4;
+            min-height: 52px;
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.1);
+            position: relative;
+        }
+
+        .crafting-slot .mod-overlay {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            font-size: 0.6rem;
+            color: rgba(255, 255, 255, 0.4);
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1px 3px;
+            border-radius: 2px;
+            pointer-events: none;
+            line-height: 1;
+        }
+
+        .crafting-slot.empty {
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border-color: #3a3a3a;
+        }
+
+        .crafting-slot.item {
+            background: linear-gradient(135deg, #2a2a2a, #3a3a3a);
+            border-color: #4a4a4a;
+            color: #e5e5e5;
+        }
+
+        .crafting-slot.tag {
+            background: linear-gradient(135deg, #2a3a2a, #3a4a3a);
+            border-color: #4a5a4a;
+            color: #90ee90;
+        }
+
+        .crafting-result {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .crafting-arrow {
+            font-size: 1.5rem;
+            color: #ffaa00;
+            text-shadow: 0 0 4px rgba(255, 170, 0, 0.5);
+        }
+
+        .result-item {
+            background: linear-gradient(135deg, #4a0e4e, #2d0831);
+            border: 2px solid #8b5cf6;
+            border-radius: 8px;
+            padding: 1.5rem;
+            font-size: 0.95rem;
+            color: #e5e5e5;
+            text-align: center;
+            min-width: 120px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);
+            position: relative;
+        }
+
+        /* Smelting Grid Styles */
+        .smelting-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            flex-shrink: 0;
+            padding: 2rem;
+        }
+
+        .smelting-input {
+            background: linear-gradient(135deg, #8B4513, #A0522D);
+            border: 3px solid #654321;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .smelting-slot {
+            background: linear-gradient(135deg, #2a2a2a, #3a3a3a);
+            border: 2px solid #4a4a4a;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            color: #e5e5e5;
+            text-align: center;
+            padding: 16px 20px;
+            word-break: break-word;
+            overflow: hidden;
+            line-height: 1.4;
+            min-height: 80px;
+            min-width: 140px;
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.1);
+            position: relative;
+        }
+
+        .smelting-slot .mod-overlay,
+        .smelting-result .mod-overlay,
+        .ingredient-slot .mod-overlay,
+        .shapeless-result .mod-overlay,
+        .result-item .mod-overlay {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            font-size: 0.6rem;
+            color: rgba(255, 255, 255, 0.4);
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1px 3px;
+            border-radius: 2px;
+            pointer-events: none;
+            line-height: 1;
+        }
+
+        .smelting-slot.item {
+            background: linear-gradient(135deg, #2a2a2a, #3a3a3a);
+            border-color: #4a4a4a;
+            color: #e5e5e5;
+        }
+
+        .smelting-slot.tag {
+            background: linear-gradient(135deg, #2a3a2a, #3a4a3a);
+            border-color: #4a5a4a;
+            color: #90ee90;
+        }
+
+        .smelting-arrow {
+            font-size: 2rem;
+            color: #ffaa00;
+            text-shadow: 0 0 6px rgba(255, 170, 0, 0.5);
+        }
+
+        .smelting-result {
+            background: linear-gradient(135deg, #4a0e4e, #2d0831);
+            border: 2px solid #8b5cf6;
+            border-radius: 8px;
+            padding: 20px;
+            font-size: 0.95rem;
+            color: #e5e5e5;
+            text-align: center;
+            min-width: 140px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);
+            position: relative;
+        }
+
+        .recipe-display {
+            padding: 1rem;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: baseline;
+            gap: 0.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-label {
+            font-size: 0.8rem;
+            color: #b0b0b0;
+            font-weight: normal;
+            line-height: 1;
+        }
+
+        .detail-value {
+            font-size: 0.8rem;
+            color: #90ee90;
+            font-weight: normal;
+        }
+
+        .json-toggle {
+            background: #2a2a2a;
+            border: 1px solid #4a4a4a;
+            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            margin-top: 1rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #b0b0b0;
+            text-align: center;
+            transition: background-color 0.2s;
+        }
+
+        .json-toggle:hover {
+            background: #3a3a3a;
+            border-color: #5a5a5a;
+        }
+
+        .json-content {
+            background: #1a1a1a;
+            border: 1px solid #4a4a4a;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.8rem;
+            color: #e5e5e5;
+            padding: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div x-data="app()" x-init="loadRecipes()">
+        <div class="header">
+            <h1>Pattern Press</h1>
+            <p>KubeJS Recipe Browser & Analysis Tool</p>
+        </div>
+
+        <div class="controls">
+            <div class="filter-section">
+                <label for="mod">Mod:</label>
+                <select id="mod" x-model="selectedMod" @change="filterRecipes()">
+                    <option value="">All Mods</option>
+                    <template x-for="mod in availableMods" :key="mod">
+                        <option :value="mod" x-text="mod"></option>
+                    </template>
+                </select>
+
+                <label for="recipeType">Recipe Type:</label>
+                <select id="recipeType" x-model="selectedRecipeType" @change="filterRecipes()">
+                    <option value="">All Types</option>
+                    <template x-for="type in availableRecipeTypes" :key="type">
+                        <option :value="type" x-text="type"></option>
+                    </template>
+                </select>
+            </div>
+
+            <p><strong>All Recipes:</strong> <span x-text="totalRecipes"></span> total (<span x-text="filteredRecipes.length"></span> filtered)</p>
+            <p>Showing <span x-text="paginatedRecipes.length"></span> recipes (Page <span x-text="currentPage"></span> of <span x-text="totalPages"></span>)</p>
+        </div>
+
+        <!-- Loading State -->
+        <div x-show="loading" class="loading">
+            <p>Loading recipes...</p>
+        </div>
+
+        <!-- Recipe List -->
+        <div x-show="!loading" class="recipe-list">
+            <template x-for="recipe in paginatedRecipes" :key="recipe.id">
+                <div class="recipe-card">
+                    <div class="recipe-header">
+                        <h3 x-text="formatName(recipe.name)"></h3>
+                        <div class="recipe-badges" x-data="recipeMetadata(recipe)">
+                            <div class="badge-group">
+                                <span class="badge-label">Mod:</span>
+                                <span class="badge badge-mod" x-text="recipe.mod"></span>
+                            </div>
+                            <div class="badge-group">
+                                <span class="badge-label">Recipe Type:</span>
+                                <span class="badge badge-type" x-text="recipe.type"></span>
+                            </div>
+                            <div class="badge-group">
+                                <span class="badge-label">Recipe ID:</span>
+                                <span class="badge badge-recipe-id" x-text="getCanonicalName(recipe)"></span>
+                            </div>
+                            <div class="badge-group" x-show="recipe.category">
+                                <span class="badge-label">Category:</span>
+                                <span class="badge badge-category" x-text="recipe.category"></span>
+                            </div>
+                            <div class="badge-group" x-show="cookingTime">
+                                <span class="badge-label">Cooking Time:</span>
+                                <span class="badge badge-time" x-text="cookingTime + ' ticks'"></span>
+                            </div>
+                            <div class="badge-group" x-show="experience">
+                                <span class="badge-label">Experience:</span>
+                                <span class="badge badge-xp" x-text="experience + ' XP'"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="recipe-display" x-data="{ showJson: false }">
+                        <!-- Shaped Crafting Grid View -->
+                        <div x-show="recipe.type === 'minecraft:crafting_shaped'" x-data="craftingGrid(recipe)">
+
+                            <!-- Centered crafting visualization -->
+                            <div class="recipe-visualization">
+                                <div class="crafting-container">
+                                    <div class="crafting-grid">
+                                        <template x-for="(slot, index) in gridSlots" :key="index">
+                                            <div class="crafting-slot"
+                                                 :class="{
+                                                     'empty': !slot,
+                                                     'item': slot && slot.type === 'item',
+                                                     'tag': slot && slot.type === 'tag'
+                                                 }">
+                                                <span x-text="slot ? slot.text : ''"></span>
+                                                <div class="mod-overlay" x-show="slot" x-text="slot ? slot.modText : ''"></div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <div class="crafting-result">
+                                        <span class="crafting-arrow">→</span>
+                                        <div class="result-item">
+                                            <span x-text="resultText"></span>
+                                            <div class="mod-overlay" x-text="resultModText"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Smelting/Blasting Recipe View -->
+                        <div x-show="recipe.type === 'minecraft:smelting' || recipe.type === 'minecraft:blasting'" x-data="smeltingGrid(recipe)">
+                            <!-- Centered smelting visualization -->
+                            <div class="recipe-visualization">
+                                <div class="smelting-container">
+                                    <div class="smelting-input">
+                                        <div class="smelting-slot"
+                                             :class="{
+                                                 'item': inputSlot && inputSlot.type === 'item',
+                                                 'tag': inputSlot && inputSlot.type === 'tag'
+                                             }">
+                                            <span x-text="inputSlot ? inputSlot.text : 'No Input'"></span>
+                                            <div class="mod-overlay" x-show="inputSlot" x-text="inputSlot ? inputSlot.modText : ''"></div>
+                                        </div>
+                                    </div>
+                                    <span class="smelting-arrow">→</span>
+                                    <div class="smelting-result">
+                                        <span x-text="resultText"></span>
+                                        <div class="mod-overlay" x-text="resultModText"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Campfire Cooking Recipe View -->
+                        <div x-show="recipe.type === 'minecraft:campfire_cooking'" x-data="smeltingGrid(recipe)">
+                            <!-- Centered campfire visualization -->
+                            <div class="recipe-visualization">
+                                <div class="smelting-container">
+                                    <div class="smelting-input">
+                                        <div class="smelting-slot"
+                                             :class="{
+                                                 'item': inputSlot && inputSlot.type === 'item',
+                                                 'tag': inputSlot && inputSlot.type === 'tag'
+                                             }">
+                                            <span x-text="inputSlot ? inputSlot.text : 'No Input'"></span>
+                                            <div class="mod-overlay" x-show="inputSlot" x-text="inputSlot ? inputSlot.modText : ''"></div>
+                                        </div>
+                                    </div>
+                                    <span class="smelting-arrow">→</span>
+                                    <div class="smelting-result">
+                                        <span x-text="resultText"></span>
+                                        <div class="mod-overlay" x-text="resultModText"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Shapeless Crafting Recipe View -->
+                        <div x-show="recipe.type === 'minecraft:crafting_shapeless'" x-data="shapelessGrid(recipe)">
+                            <!-- Centered shapeless visualization -->
+                            <div class="recipe-visualization">
+                                <div class="shapeless-container">
+                                    <div class="shapeless-ingredients">
+                                        <div class="ingredient-grid">
+                                            <template x-for="(ingredient, index) in ingredients" :key="index">
+                                                <div class="ingredient-slot"
+                                                     :class="{
+                                                         'item': ingredient && ingredient.type === 'item',
+                                                         'tag': ingredient && ingredient.type === 'tag'
+                                                     }">
+                                                    <span x-text="ingredient ? ingredient.text : 'Empty'"></span>
+                                                    <div class="mod-overlay" x-show="ingredient" x-text="ingredient ? ingredient.modText : ''"></div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                    <span class="shapeless-arrow">→</span>
+                                    <div class="shapeless-result">
+                                        <span x-text="resultText"></span>
+                                        <div class="mod-overlay" x-text="resultModText"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Smithing Recipe View -->
+                        <div x-show="recipe.type === 'minecraft:smithing'" x-data="smithingGrid(recipe)">
+                            <!-- Centered smithing visualization -->
+                            <div class="recipe-visualization">
+                                <div class="smithing-container">
+                                    <div class="smithing-inputs">
+                                        <div class="smithing-slot"
+                                             :class="{
+                                                 'item': templateSlot && templateSlot.type === 'item',
+                                                 'tag': templateSlot && templateSlot.type === 'tag'
+                                             }">
+                                            <span x-text="templateSlot ? templateSlot.text : 'Template'"></span>
+                                            <div class="mod-overlay" x-show="templateSlot" x-text="templateSlot ? templateSlot.modText : ''"></div>
+                                        </div>
+                                        <div class="smithing-slot"
+                                             :class="{
+                                                 'item': baseSlot && baseSlot.type === 'item',
+                                                 'tag': baseSlot && baseSlot.type === 'tag'
+                                             }">
+                                            <span x-text="baseSlot ? baseSlot.text : 'Base'"></span>
+                                            <div class="mod-overlay" x-show="baseSlot" x-text="baseSlot ? baseSlot.modText : ''"></div>
+                                        </div>
+                                        <div class="smithing-slot"
+                                             :class="{
+                                                 'item': additionSlot && additionSlot.type === 'item',
+                                                 'tag': additionSlot && additionSlot.type === 'tag'
+                                             }">
+                                            <span x-text="additionSlot ? additionSlot.text : 'Addition'"></span>
+                                            <div class="mod-overlay" x-show="additionSlot" x-text="additionSlot ? additionSlot.modText : ''"></div>
+                                        </div>
+                                    </div>
+                                    <span class="smithing-arrow">→</span>
+                                    <div class="smithing-result">
+                                        <span x-text="resultText"></span>
+                                        <div class="mod-overlay" x-text="resultModText"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Smoking Recipe View (reuses smelting) -->
+                        <div x-show="recipe.type === 'minecraft:smoking'" x-data="smeltingGrid(recipe)">
+                            <!-- Centered smoking visualization -->
+                            <div class="recipe-visualization">
+                                <div class="smelting-container">
+                                    <div class="smelting-input">
+                                        <div class="smelting-slot"
+                                             :class="{
+                                                 'item': inputSlot && inputSlot.type === 'item',
+                                                 'tag': inputSlot && inputSlot.type === 'tag'
+                                             }">
+                                            <span x-text="inputSlot ? inputSlot.text : 'No Input'"></span>
+                                            <div class="mod-overlay" x-show="inputSlot" x-text="inputSlot ? inputSlot.modText : ''"></div>
+                                        </div>
+                                    </div>
+                                    <span class="smelting-arrow">→</span>
+                                    <div class="smelting-result">
+                                        <span x-text="resultText"></span>
+                                        <div class="mod-overlay" x-text="resultModText"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stonecutting Recipe View (reuses smelting) -->
+                        <div x-show="recipe.type === 'minecraft:stonecutting'" x-data="smeltingGrid(recipe)">
+                            <!-- Centered stonecutting visualization -->
+                            <div class="recipe-visualization">
+                                <div class="smelting-container">
+                                    <div class="smelting-input">
+                                        <div class="smelting-slot"
+                                             :class="{
+                                                 'item': inputSlot && inputSlot.type === 'item',
+                                                 'tag': inputSlot && inputSlot.type === 'tag'
+                                             }">
+                                            <span x-text="inputSlot ? inputSlot.text : 'No Input'"></span>
+                                            <div class="mod-overlay" x-show="inputSlot" x-text="inputSlot ? inputSlot.modText : ''"></div>
+                                        </div>
+                                    </div>
+                                    <span class="smelting-arrow">→</span>
+                                    <div class="smelting-result">
+                                        <span x-text="resultText"></span>
+                                        <div class="mod-overlay" x-text="resultModText"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Default message for other recipes (for now) -->
+                        <div x-show="recipe.type !== 'minecraft:crafting_shaped' && recipe.type !== 'minecraft:smelting' && recipe.type !== 'minecraft:blasting' && recipe.type !== 'minecraft:campfire_cooking' && recipe.type !== 'minecraft:crafting_shapeless' && recipe.type !== 'minecraft:smithing' && recipe.type !== 'minecraft:smoking' && recipe.type !== 'minecraft:stonecutting'" style="text-align: center; padding: 2rem; color: #6c757d;">
+                            <p>Recipe visualization coming soon for <span x-text="recipe.type"></span></p>
+                        </div>
+
+                        <!-- Expandable JSON Section (always present) -->
+                        <div class="json-toggle" @click="showJson = !showJson" x-text="showJson ? 'Hide Raw JSON' : 'Show Raw JSON'"></div>
+                        <div x-show="showJson" class="json-content">
+                            <pre x-text="JSON.stringify(recipe.data, null, 2)"></pre>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Pagination -->
+        <div x-show="!loading && totalPages > 1" class="pagination">
+            <button @click="prevPage()" :disabled="currentPage === 1">Previous</button>
+            <span x-text="`Page ${currentPage} of ${totalPages}`"></span>
+            <button @click="nextPage()" :disabled="currentPage === totalPages">Next</button>
+        </div>
+    </div>
+
+    <script>
+        function app() {
+            return {
+                recipes: [],
+                allRecipes: [],
+                loading: true,
+                currentPage: 1,
+                recipesPerPage: 6,
+                selectedRecipeType: '',
+                selectedMod: '',
+
+                get totalRecipes() {
+                    return this.allRecipes.length;
+                },
+
+                get availableMods() {
+                    const mods = [...new Set(this.allRecipes.map(recipe => recipe.mod))];
+                    const sortedMods = mods.sort();
+
+                    // Put minecraft first, then alphabetical for the rest
+                    const result = [];
+                    if (sortedMods.includes('minecraft')) {
+                        result.push('minecraft');
+                        sortedMods.splice(sortedMods.indexOf('minecraft'), 1);
+                    }
+                    result.push(...sortedMods);
+
+                    return result;
+                },
+
+                get availableRecipeTypes() {
+                    const types = [...new Set(this.allRecipes.map(recipe => recipe.type))];
+                    const sortedTypes = types.sort();
+
+                    // Put minecraft recipe types first, then alphabetical for the rest
+                    const minecraftTypes = sortedTypes.filter(type => type.startsWith('minecraft:'));
+                    const otherTypes = sortedTypes.filter(type => !type.startsWith('minecraft:'));
+
+                    return [...minecraftTypes, ...otherTypes];
+                },
+
+                get filteredRecipes() {
+                    let filtered = this.allRecipes;
+
+                    // Filter by mod if selected
+                    if (this.selectedMod) {
+                        filtered = filtered.filter(recipe => recipe.mod === this.selectedMod);
+                    }
+
+                    // Filter by recipe type if selected
+                    if (this.selectedRecipeType) {
+                        filtered = filtered.filter(recipe => recipe.type === this.selectedRecipeType);
+                    }
+
+                    return filtered;
+                },
+
+                get totalPages() {
+                    return Math.ceil(this.filteredRecipes.length / this.recipesPerPage);
+                },
+
+                get paginatedRecipes() {
+                    const start = (this.currentPage - 1) * this.recipesPerPage;
+                    const end = start + this.recipesPerPage;
+                    return this.filteredRecipes.slice(start, end);
+                },
+
+                async loadRecipes() {
+                    try {
+                        this.loading = true;
+                        const response = await fetch('/recipes?limit=20000');
+                        const data = await response.json();
+                        this.allRecipes = data.recipes || [];
+                        this.recipes = this.allRecipes;
+                    } catch (error) {
+                        console.error('Failed to load recipes:', error);
+                        this.allRecipes = [];
+                        this.recipes = [];
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                filterRecipes() {
+                    this.currentPage = 1; // Reset to first page when filtering
+                },
+
+                nextPage() {
+                    if (this.currentPage < this.totalPages) {
+                        this.currentPage++;
+                    }
+                },
+
+                prevPage() {
+                    if (this.currentPage > 1) {
+                        this.currentPage--;
+                    }
+                },
+
+                formatName(name) {
+                    if (!name) return '';
+
+                    return name
+                        .replace(/_/g, ' ')                    // Replace underscores with spaces
+                        .replace(/\b\w/g, l => l.toUpperCase()) // Capitalize first letter of each word
+                        .trim();                               // Remove any trailing spaces
+                },
+
+                formatRecipeType(type) {
+                    if (!type) return '';
+
+                    return type
+                        .replace(/:/g, ': ')                   // Add space after colon
+                        .replace(/_/g, ' ')                    // Replace underscores with spaces
+                        .replace(/\b\w/g, l => l.toUpperCase()) // Capitalize first letter of each word
+                        .trim();                               // Remove any trailing spaces
+                },
+
+                getCanonicalName(recipe) {
+                    if (!recipe) return '';
+
+                    // Return the full namespaced recipe identifier: mod:id
+                    return `${recipe.mod}:${recipe.id}`;
+                }
+            }
+        }
+
+        function craftingGrid(recipe) {
+            return {
+                get gridSlots() {
+                    const pattern = recipe.data.pattern || [];
+                    const key = recipe.data.key || {};
+                    const slots = new Array(9).fill(null);
+
+                    // Process each row of the pattern
+                    pattern.forEach((row, rowIndex) => {
+                        for (let colIndex = 0; colIndex < row.length && colIndex < 3; colIndex++) {
+                            const symbol = row[colIndex];
+                            const slotIndex = rowIndex * 3 + colIndex;
+
+                            if (symbol !== ' ' && key[symbol]) {
+                                const ingredient = key[symbol];
+                                if (ingredient.item) {
+                                    // Extract just the item name after the colon
+                                    const itemParts = ingredient.item.split(':');
+                                    slots[slotIndex] = {
+                                        text: itemParts.pop(),
+                                        type: 'item',
+                                        modText: itemParts.length > 0 ? itemParts[0] : 'minecraft'
+                                    };
+                                } else if (ingredient.tag) {
+                                    // Keep full tag name with namespace and add # prefix
+                                    slots[slotIndex] = {
+                                        text: '#' + ingredient.tag,
+                                        type: 'tag',
+                                        modText: 'tag'
+                                    };
+                                }
+                            }
+                        }
+                    });
+
+                    return slots;
+                },
+
+                get resultText() {
+                    const result = recipe.data.result;
+                    if (!result) return 'Unknown';
+
+                    let text = result.id ? result.id.split(':').pop() : 'Unknown';
+                    if (result.count && result.count > 1) {
+                        text += ` x${result.count}`;
+                    }
+                    return text;
+                },
+
+                get resultModText() {
+                    const result = recipe.data.result;
+                    if (!result || !result.id) return 'minecraft';
+
+                    const itemParts = result.id.split(':');
+                    return itemParts.length > 1 ? itemParts[0] : 'minecraft';
+                }
+            };
+        }
+
+        function smeltingGrid(recipe) {
+            return {
+                get inputSlot() {
+                    const ingredient = recipe.data.ingredient;
+                    if (!ingredient) return null;
+
+                    if (ingredient.item) {
+                        const itemParts = ingredient.item.split(':');
+                        return {
+                            text: itemParts.pop(),
+                            type: 'item',
+                            modText: itemParts.length > 0 ? itemParts[0] : 'minecraft'
+                        };
+                    } else if (ingredient.tag) {
+                        return {
+                            text: '#' + ingredient.tag,
+                            type: 'tag',
+                            modText: 'tag'
+                        };
+                    }
+
+                    return null;
+                },
+
+                get resultText() {
+                    const result = recipe.data.result;
+                    if (!result) return 'Unknown';
+
+                    let text = result.id ? result.id.split(':').pop() : 'Unknown';
+                    if (result.count && result.count > 1) {
+                        text += ` x${result.count}`;
+                    }
+                    return text;
+                },
+
+                get resultModText() {
+                    const result = recipe.data.result;
+                    if (!result || !result.id) return 'minecraft';
+
+                    const itemParts = result.id.split(':');
+                    return itemParts.length > 1 ? itemParts[0] : 'minecraft';
+                }
+            };
+        }
+
+        function recipeMetadata(recipe) {
+            return {
+                get cookingTime() {
+                    return recipe.data.cookingtime || null;
+                },
+
+                get experience() {
+                    return recipe.data.experience || null;
+                }
+            };
+        }
+
+        function shapelessGrid(recipe) {
+            return {
+                get ingredients() {
+                    const ingredients = recipe.data.ingredients || [];
+
+                    return ingredients.map(ingredient => {
+                        if (ingredient.item) {
+                            const itemParts = ingredient.item.split(':');
+                            return {
+                                text: itemParts.pop(),
+                                type: 'item',
+                                modText: itemParts.length > 0 ? itemParts[0] : 'minecraft'
+                            };
+                        } else if (ingredient.tag) {
+                            return {
+                                text: '#' + ingredient.tag,
+                                type: 'tag',
+                                modText: 'tag'
+                            };
+                        }
+                        return null;
+                    }).filter(Boolean);
+                },
+
+                get resultText() {
+                    const result = recipe.data.result;
+                    if (!result) return 'Unknown';
+
+                    let text = result.id ? result.id.split(':').pop() : 'Unknown';
+                    if (result.count && result.count > 1) {
+                        text += ` x${result.count}`;
+                    }
+                    return text;
+                },
+
+                get resultModText() {
+                    const result = recipe.data.result;
+                    if (!result || !result.id) return 'minecraft';
+
+                    const itemParts = result.id.split(':');
+                    return itemParts.length > 1 ? itemParts[0] : 'minecraft';
+                }
+            };
+        }
+
+        function smithingGrid(recipe) {
+            return {
+                get templateSlot() {
+                    const template = recipe.data.template;
+                    if (!template) return null;
+
+                    if (template.item) {
+                        const itemParts = template.item.split(':');
+                        return {
+                            text: itemParts.pop(),
+                            type: 'item',
+                            modText: itemParts.length > 0 ? itemParts[0] : 'minecraft'
+                        };
+                    } else if (template.tag) {
+                        return {
+                            text: '#' + template.tag,
+                            type: 'tag',
+                            modText: 'tag'
+                        };
+                    }
+                    return null;
+                },
+
+                get baseSlot() {
+                    const base = recipe.data.base;
+                    if (!base) return null;
+
+                    if (base.item) {
+                        const itemParts = base.item.split(':');
+                        return {
+                            text: itemParts.pop(),
+                            type: 'item',
+                            modText: itemParts.length > 0 ? itemParts[0] : 'minecraft'
+                        };
+                    } else if (base.tag) {
+                        return {
+                            text: '#' + base.tag,
+                            type: 'tag',
+                            modText: 'tag'
+                        };
+                    }
+                    return null;
+                },
+
+                get additionSlot() {
+                    const addition = recipe.data.addition;
+                    if (!addition) return null;
+
+                    if (addition.item) {
+                        const itemParts = addition.item.split(':');
+                        return {
+                            text: itemParts.pop(),
+                            type: 'item',
+                            modText: itemParts.length > 0 ? itemParts[0] : 'minecraft'
+                        };
+                    } else if (addition.tag) {
+                        return {
+                            text: '#' + addition.tag,
+                            type: 'tag',
+                            modText: 'tag'
+                        };
+                    }
+                    return null;
+                },
+
+                get resultText() {
+                    const result = recipe.data.result;
+                    if (!result) return 'Unknown';
+
+                    let text = result.id ? result.id.split(':').pop() : 'Unknown';
+                    if (result.count && result.count > 1) {
+                        text += ` x${result.count}`;
+                    }
+                    return text;
+                },
+
+                get resultModText() {
+                    const result = recipe.data.result;
+                    if (!result || !result.id) return 'minecraft';
+
+                    const itemParts = result.id.split(':');
+                    return itemParts.length > 1 ? itemParts[0] : 'minecraft';
+                }
+            };
+        }
+    </script>
+</body>
+</html>

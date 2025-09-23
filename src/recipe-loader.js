@@ -142,6 +142,73 @@ class RecipeLoader {
     }
 
     /**
+     * Gets metadata (from generated metadata.json or computed from recipes)
+     */
+    getMetadata() {
+        const metadataPath = path.join(__dirname, '..', 'data', 'metadata.json');
+
+        // Try to load pre-generated metadata first
+        if (fs.existsSync(metadataPath)) {
+            try {
+                return readJsonFile(metadataPath);
+            } catch (error) {
+                console.warn('Error loading metadata.json, generating on-the-fly:', error.message);
+            }
+        }
+
+        // Fallback: generate metadata on-the-fly
+        return this.generateMetadataFromRecipes();
+    }
+
+    /**
+     * Generates metadata from loaded recipes (fallback method)
+     */
+    generateMetadataFromRecipes() {
+        const allRecipes = this.loadAllRecipes();
+        const metadata = {
+            generated_at: new Date(),
+            total_recipes: allRecipes.length,
+            mods: [],
+            recipe_types: [],
+            categories: [],
+            stats: {
+                by_mod: {},
+                by_type: {},
+                by_category: {}
+            }
+        };
+
+        const modSet = new Set();
+        const typeSet = new Set();
+        const categorySet = new Set();
+
+        for (const recipe of allRecipes) {
+            // Collect mods
+            modSet.add(recipe.mod);
+            metadata.stats.by_mod[recipe.mod] = (metadata.stats.by_mod[recipe.mod] || 0) + 1;
+
+            // Collect recipe types
+            if (recipe.type) {
+                typeSet.add(recipe.type);
+                metadata.stats.by_type[recipe.type] = (metadata.stats.by_type[recipe.type] || 0) + 1;
+            }
+
+            // Collect categories
+            if (recipe.category) {
+                categorySet.add(recipe.category);
+                metadata.stats.by_category[recipe.category] = (metadata.stats.by_category[recipe.category] || 0) + 1;
+            }
+        }
+
+        // Convert sets to sorted arrays
+        metadata.mods = Array.from(modSet).sort();
+        metadata.recipe_types = Array.from(typeSet).sort();
+        metadata.categories = Array.from(categorySet).sort();
+
+        return metadata;
+    }
+
+    /**
      * Clears the cache (useful for reloading after import)
      */
     clearCache() {

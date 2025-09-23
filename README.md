@@ -1,13 +1,17 @@
 ﻿# Pattern Press
 
-A Node.js tool for importing and browsing KubeJS recipe exports with comprehensive mod support and intelligent filtering.
+A comprehensive web-based tool for importing and browsing KubeJS recipe exports with sophisticated visualizations and intelligent filtering.
 
 ## Features
 
 - **Comprehensive Recipe Import**: Supports 70+ mods with 250+ recipe types
-- **Intelligent Filtering**: Automatically categorizes recipe types by customization value
-- **Web Interface**: Browse and filter imported recipes by mod, type, and content
-- **Configurable**: Flexible whitelist/ignore system for recipe type management
+- **Advanced Web Interface**: Dark mode Minecraft-themed interface with recipe visualizations
+- **Recipe Visualizations**: Visual representations for 8 recipe types (crafting, smelting, smithing, etc.)
+- **Smart Filtering**: Filter by mod and recipe type with intelligent sorting (minecraft types first)
+- **Mod Information**: Visual overlays showing item source mods on all recipe ingredients
+- **Intelligent Categorization**: Automatically categorizes recipe types by customization value
+- **Dynamic Metadata**: Modpack-agnostic UI that adapts to available mods and recipe types
+- **Responsive Design**: Clean two-column badge layout with consistent alignment
 - **Import Analytics**: Detailed statistics and unsupported recipe reporting
 
 ## Directory Structure
@@ -23,8 +27,17 @@ A Node.js tool for importing and browsing KubeJS recipe exports with comprehensi
 1. **Install dependencies**: `npm install`
 2. **Import recipes**: `node src/import-recipes.js <path-to-kubejs-export>`
 3. **Start web server**: `npm start`
-4. **Browse recipes**: Open http://localhost:3000
+4. **Browse recipes**: Open http://localhost:3000 and explore the comprehensive web interface
 5. **Run tests**: `npm test`
+
+## Web Interface Features
+
+- **Recipe Visualizations**: View crafting grids, smelting flows, smithing tables, and more
+- **Advanced Filtering**: Filter by mod (minecraft first) and recipe type with search
+- **Dark Mode Design**: Minecraft-themed interface with intuitive color coding
+- **Mod Information**: See which mod each ingredient comes from via subtle overlays
+- **Responsive Layout**: Clean badge organization with consistent alignment
+- **JSON Access**: Expand any recipe to view the raw KubeJS data
 
 ## Import Configuration
 

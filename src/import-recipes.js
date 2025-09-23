@@ -19,6 +19,18 @@ function extractModNamespace(filePath, recipeData) {
 }
 
 /**
+ * Extracts category from recipe data if available
+ */
+function extractCategory(recipeData) {
+    // Check for category field in the recipe data
+    if (recipeData && typeof recipeData.category === 'string') {
+        return recipeData.category;
+    }
+
+    return null;
+}
+
+/**
  * Checks if a recipe should be imported based on configuration
  */
 function shouldImportRecipe(mod, recipeType, config) {
@@ -52,6 +64,56 @@ function shouldImportRecipe(mod, recipeType, config) {
     }
 
     return { allowed: false, reason: 'recipe type not supported' };
+}
+
+/**
+ * Generates metadata from imported recipe data
+ */
+function generateMetadata(recipesByMod) {
+    const metadata = {
+        generated_at: new Date(),
+        total_recipes: 0,
+        mods: [],
+        recipe_types: [],
+        categories: [],
+        stats: {
+            by_mod: {},
+            by_type: {},
+            by_category: {}
+        }
+    };
+
+    const modSet = new Set();
+    const typeSet = new Set();
+    const categorySet = new Set();
+
+    // Scan all recipes to build metadata
+    for (const [mod, recipes] of Object.entries(recipesByMod)) {
+        metadata.total_recipes += recipes.length;
+        metadata.stats.by_mod[mod] = recipes.length;
+        modSet.add(mod);
+
+        for (const recipe of recipes) {
+            // Collect recipe types
+            if (recipe.type) {
+                typeSet.add(recipe.type);
+                metadata.stats.by_type[recipe.type] = (metadata.stats.by_type[recipe.type] || 0) + 1;
+            }
+
+            // Collect categories
+            if (recipe.category) {
+                categorySet.add(recipe.category);
+                metadata.stats.by_category[recipe.category] = (metadata.stats.by_category[recipe.category] || 0) + 1;
+            }
+        }
+    }
+
+    // Convert sets to sorted arrays
+    metadata.mods = Array.from(modSet).sort();
+    metadata.recipe_types = Array.from(typeSet).sort();
+    metadata.categories = Array.from(categorySet).sort();
+
+    return metadata;
 }
 
 /**
@@ -120,12 +182,16 @@ async function importRecipes(inputPath) {
                 continue;
             }
 
+            // Extract normalized fields from recipe data
+            const category = extractCategory(recipeData);
+
             // Create recipe object
             const recipe = {
                 id: fileName,
                 mod: mod,
                 type: recipeType,
                 name: fileName,
+                category: category,
                 data: recipeData,
                 imported_at: new Date()
             };
@@ -157,6 +223,14 @@ async function importRecipes(inputPath) {
         const outputPath = path.join(outputDir, `${mod}.json`);
         writeJsonFile(outputPath, recipes);
         console.log(`💾 Saved ${recipes.length} ${mod} recipes to ${mod}.json`);
+    }
+
+    // Generate and save metadata
+    if (Object.keys(recipesByMod).length > 0) {
+        const metadata = generateMetadata(recipesByMod);
+        const metadataPath = path.join(__dirname, '..', 'data', 'metadata.json');
+        writeJsonFile(metadataPath, metadata);
+        console.log(`📋 Generated metadata with ${metadata.mods.length} mods, ${metadata.recipe_types.length} recipe types, ${metadata.categories.length} categories`);
     }
 
     // Print summary

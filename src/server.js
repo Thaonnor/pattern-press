@@ -85,6 +85,19 @@ app.get('/stats', (req, res) => {
     }
 });
 
+app.get('/metadata', (req, res) => {
+    try {
+        const metadata = recipeLoader.getMetadata();
+        res.json(metadata);
+    } catch (error) {
+        console.error('Error loading metadata:', error);
+        res.status(500).json({
+            error: 'Failed to load metadata',
+            message: error.message
+        });
+    }
+});
+
 // Future: Import from frontend-provided path
 app.post('/import', (req, res) => {
     // TODO: Accept { path: "/path/to/kubejs/export/recipes" }

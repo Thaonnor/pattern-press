@@ -25,9 +25,10 @@
 ### Server Layer (`src/server.js`)
 - **Port**: 3000
 - **Routes**:
-  - `GET /` - Serves main HTML page
-  - `GET /recipes` - Returns filtered/paginated recipe data
+  - `GET /` - Serves main HTML page with comprehensive recipe interface
+  - `GET /recipes` - Returns filtered/paginated recipe data with category support
   - `GET /stats` - Provides aggregate statistics
+  - `GET /metadata` - Dynamic metadata for modpack-agnostic UI population
 - **Dependencies**: express, cors
 
 ### Import System (`src/import-recipes.js`)
@@ -43,9 +44,8 @@
 - **Format**: Array of recipe objects with consistent structure
 
 ### Frontend (`public/`)
-- **HTML** (`index.html`) - Single page application shell
-- **CSS** (`assets/css/style.css`) - Styling and layout
-- **JavaScript** (`assets/js/app.js`) - Client-side interaction logic
+- **HTML** (`index.html`) - Single page application with Alpine.js framework and comprehensive recipe visualizations
+- **Integrated Assets** - All CSS and JavaScript embedded for optimal performance and simplified deployment
 
 ### Testing (`test/`)
 - **Framework**: Jest testing framework
@@ -63,6 +63,7 @@
   mod: string,                 // Source mod namespace (minecraft, mekanism, etc.)
   type: string,                // Recipe type from JSON (minecraft:crafting_shaped, etc.)
   name: string,                // Recipe name/identifier
+  category: string,            // Recipe category (when available)
   data: Object,                // Raw KubeJS recipe JSON
   imported_at: Date            // Import timestamp
 }
@@ -89,8 +90,42 @@
 
 ## API Endpoints
 
-- `GET /recipes?type=&mod=&search=&page=1&limit=20` - Filtered recipe listing
+- `GET /recipes?type=&mod=&search=&page=1&limit=20` - Filtered recipe listing with category support
 - `GET /stats` - Recipe statistics by type/mod
+- `GET /metadata` - Dynamic metadata including mods, recipe types, and categories
+
+## Frontend Architecture
+
+### Alpine.js Framework
+- **Component-based**: Reactive components for recipe display, filtering, and visualizations
+- **State Management**: Client-side state for filters, pagination, and recipe data
+- **Event Handling**: Dynamic updates without page reloads
+
+### Recipe Visualization System
+**8 Supported Recipe Types:**
+1. **Shaped Crafting** (`minecraft:crafting_shaped`) - 3x3 grid with pattern visualization
+2. **Shapeless Crafting** (`minecraft:crafting_shapeless`) - Flexible ingredient grid layout
+3. **Smelting** (`minecraft:smelting`) - Single input → output with time/XP display
+4. **Blasting** (`minecraft:blasting`) - Enhanced smelting visualization
+5. **Smoking** (`minecraft:smoking`) - Specialized cooking visualization
+6. **Campfire Cooking** (`minecraft:campfire_cooking`) - Outdoor cooking interface
+7. **Stonecutting** (`minecraft:stonecutting`) - Precision cutting visualization
+8. **Smithing** (`minecraft:smithing`) - Template + base + addition → result layout
+
+### Visual Features
+- **Dark Mode Design**: Minecraft-themed color palette with authentic feel
+- **Mod Information Overlays**: Subtle badges showing item source mods
+- **Item/Tag Differentiation**: Color-coded slots (green for tags, regular for items)
+- **Responsive Layout**: Two-column badge organization with consistent alignment
+- **Centered Visualizations**: Clean input→output flow layouts for all recipe types
+
+### Component Functions
+- **`app()`** - Main application state and filtering logic
+- **`craftingGrid(recipe)`** - 3x3 pattern visualization with mod extraction
+- **`smeltingGrid(recipe)`** - Single input processing with metadata
+- **`shapelessGrid(recipe)`** - Dynamic ingredient list rendering
+- **`smithingGrid(recipe)`** - Three-input smithing table visualization
+- **`recipeMetadata(recipe)`** - Universal metadata extraction for badges
 
 ## Recipe Type Analysis & Configuration
 
