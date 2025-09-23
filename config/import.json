@@ -82,7 +82,19 @@
     "minecraft:campfire_cooking",
     "minecraft:smithing_transform",
     "minecraft:smithing_trim",
-    "minecraft:stonecutting"
+    "minecraft:stonecutting",
+    "actuallyadditions:coffee_ingredient",
+    "actuallyadditions:color_change",
+    "actuallyadditions:crushing",
+    "actuallyadditions:laser",
+    "actuallyadditions:liquid_fuel",
+    "actuallyadditions:empowering",
+    "actuallyadditions:fermenting",
+    "actuallyadditions:mining_lens",
+    "actuallyadditions:pressing",
+    "immersiveengineering:cloche",
+    "ae2:charger",
+    "ae2:entropy"
   ],
   "ignoredRecipeTypes": [
     "minecraft:crafting_special_armordye",
@@ -98,7 +110,8 @@
     "minecraft:crafting_special_shulkerboxcoloring",
     "minecraft:crafting_special_suspiciousstew",
     "minecraft:crafting_special_tippedarrow",
-    "minecraft:crafting_decorated_pot"
+    "minecraft:crafting_decorated_pot",
+    "ae2:facade"
   ],
   "logging": {
     "logSkipped": true,
