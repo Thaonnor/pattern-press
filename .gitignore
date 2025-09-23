@@ -8,6 +8,7 @@ yarn-error.log*
 # Generated data artifacts
 /data/segments/
 /data/*.json
+/data/recipes/
 
 # OS-specific
 .DS_Store
