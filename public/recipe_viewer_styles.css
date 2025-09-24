@@ -1,0 +1,616 @@
+/* Recipe Viewer Starter CSS — Updated Sept 23, 2025
+   Changes: lighter dark surfaces, stronger headers, metadata subheader,
+   labeled Mod/Type badges, clearer input vs output, bigger arrows,
+   optional slot labels, centered layout, 2‑column grid on wide screens.
+*/
+
+:root {
+  /* Base Colors */
+  --bg: #0d1014;
+  --surface-1: #141821;   /* card */
+  --surface-2: #1a1f29;   /* header / slot */
+  --border: #2b3240;
+  --text: #e8ecf4;
+  --muted: #9aa7b6;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --info: #60a5fa;
+  --danger: #ef4444;
+
+  /* Semantic Badge Colors */
+  --badge-mod: var(--success);
+  --badge-type: var(--primary);
+  --badge-id: #8b5cf6;
+  --badge-id-hover: #7c3aed;
+  --badge-metadata: #374151;
+  --badge-metadata-border: #4b5563;
+  --badge-copy: var(--warning);
+  --badge-copy-hover: #d97706;
+
+  /* Typography Scale */
+  --font-xs: .75rem;
+  --font-sm: .78rem;
+  --font-base: .85rem;
+  --font-md: .9rem;
+  --font-lg: 1.1rem;
+  --font-xl: 2.5rem;
+
+  /* Spacing Scale */
+  --space-xs: .25rem;
+  --space-sm: .5rem;
+  --space-md: 1rem;
+  --space-lg: 1.25rem;
+  --space-xl: 2rem;
+
+  /* Slot Sizing */
+  --slot-size: 160px;
+  --slot-height: 80px;
+  --slot-gap: 15px;
+  --slot-padding: 12px 14px;
+
+  /* Border Radius */
+  --r-sm: .375rem;
+  --r-md: .5rem;
+  --r-lg: .75rem;
+
+  /* Shadows & Effects */
+  --shadow-1: 0 1px 2px rgba(0,0,0,.35);
+  --shadow-2: 0 8px 28px rgba(0,0,0,.35);
+  --focus: 0 0 0 3px rgba(59,130,246,.35);
+}
+
+[data-theme="light"] {
+  --bg: #f6f7fb; --surface-1: #ffffff; --surface-2: #f2f4f8; --border: #d9dde6;
+  --text: #111827; --muted: #4b5563; --primary: #2563eb; --primary-hover: #1d4ed8;
+  --success: #059669; --warning: #d97706; --info: #2563eb; --danger: #dc2626;
+  --shadow-1: 0 1px 2px rgba(17,24,39,.08); --shadow-2: 0 10px 30px rgba(17,24,39,.08);
+  --focus: 0 0 0 3px rgba(37,99,235,.35);
+}
+
+/* =======================
+   BASE STYLES
+   ======================= */
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  margin: 0;
+  line-height: 1.55;
+}
+
+/* =======================
+   LAYOUT
+   ======================= */
+.container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-md);
+}
+.recipes {
+  display: grid;
+  gap: var(--space-md);
+}
+
+/* =======================
+   RECIPE CARDS
+   ======================= */
+.recipe-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-1);
+}
+
+.recipe-header {
+  background: var(--surface-2);
+  padding: var(--space-xs) var(--space-md);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.recipe-title {
+  font-weight: 700;
+  font-size: var(--font-lg);
+  letter-spacing: .2px;
+  flex: 1;
+}
+
+.recipe-header-badges {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.recipe-subheader {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+  padding: var(--space-sm) var(--space-md);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-1);
+}
+
+.recipe-subheader .chip.id {
+  margin-right: auto;
+}
+
+/* =======================
+   BADGE SYSTEM
+   ======================= */
+.chip {
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--font-base);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  color: var(--text);
+  background: transparent;
+}
+
+.badge-label {
+  color: var(--muted);
+  font-size: var(--font-base);
+}
+
+/* Mod Badge */
+.chip-mod {
+  background: var(--badge-mod);
+  border-color: var(--badge-mod);
+  color: #000;
+  font-size: var(--font-base);
+}
+.chip-mod .badge-label {
+  color: rgba(0,0,0,0.7);
+  font-size: var(--font-base);
+}
+
+/* Type Badge */
+.chip-type {
+  background: var(--badge-type);
+  border-color: var(--badge-type);
+  color: white;
+  font-size: var(--font-base);
+}
+.chip-type .badge-label {
+  color: rgba(255,255,255,0.8);
+  font-size: var(--font-base);
+}
+
+/* ID Badge */
+.chip.id {
+  background: var(--badge-id);
+  border-color: var(--badge-id);
+  color: white;
+  font-size: var(--font-base);
+  cursor: pointer;
+}
+.chip.id:hover {
+  background: var(--badge-id-hover);
+  border-color: var(--badge-id-hover);
+}
+
+/* Metadata Badges */
+.chip-metadata {
+  background: var(--badge-metadata);
+  border-color: var(--badge-metadata-border);
+  color: var(--text);
+  font-size: var(--font-base);
+}
+.chip-metadata .badge-label {
+  color: var(--muted);
+  font-size: var(--font-base);
+}
+
+/* Copy Button */
+.chip-copy {
+  background: var(--badge-copy);
+  border-color: var(--badge-copy);
+  color: #000;
+  font-size: var(--font-base);
+  cursor: pointer;
+}
+.chip-copy:hover {
+  background: var(--badge-copy-hover);
+  border-color: var(--badge-copy-hover);
+}
+
+/* =======================
+   RECIPE VISUALIZATION
+   ======================= */
+.recipe-visualization {
+  padding: var(--space-md) var(--space-lg);
+}
+
+.recipe-layout {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+}
+
+/* Crafting Grid */
+.crafting-grid {
+  display: grid;
+  grid-template-columns: repeat(3, var(--slot-size));
+  gap: var(--slot-gap);
+  width: fit-content;
+}
+
+/* Ingredient Grid (for shapeless recipes) */
+.ingredient-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--slot-gap);
+  width: fit-content;
+  max-width: calc(3 * var(--slot-size) + 2 * var(--slot-gap));
+}
+
+/* Arrow */
+.arrow {
+  font-size: 32px;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+/* Result Item */
+.result-item {
+  background: var(--surface-2);
+  border: 2px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--slot-padding);
+  width: var(--slot-size);
+  height: var(--slot-height);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-2);
+  flex-shrink: 0;
+  box-sizing: border-box;
+  position: relative;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: var(--font-md);
+  color: var(--text);
+  text-align: center;
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.result-item > span {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  line-height: 1.2;
+}
+
+/* =======================
+   SLOTS
+   ======================= */
+.slot {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: var(--font-md);
+  padding: var(--slot-padding);
+  width: var(--slot-size);
+  height: var(--slot-height);
+  color: var(--text);
+  text-align: center;
+  box-sizing: border-box;
+  position: relative;
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.slot > span {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  line-height: 1.2;
+}
+
+.slot--output {
+  background: #1d2128;
+  border-width: 2px;
+  box-shadow: var(--shadow-2);
+  width: var(--slot-size);
+  height: var(--slot-height);
+  min-width: unset;
+  min-height: unset;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.slot--tag {
+  position: relative;
+}
+.slot--tag::after {
+  content: "tag";
+  position: absolute;
+  bottom: 4px;
+  right: 6px;
+  font-size: var(--font-xs);
+  color: var(--muted);
+}
+
+/* Mod Overlay Styling */
+.mod-overlay {
+  position: absolute;
+  bottom: 4px;
+  right: 6px;
+  font-size: 0.6rem;
+  color: var(--success);
+  background: rgba(0,0,0,0.6);
+  padding: 1px 3px;
+  border-radius: 2px;
+  max-width: calc(100% - 12px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Hide mod overlay for tag slots since they already show "tag" */
+.slot--tag .mod-overlay {
+  display: none;
+}
+
+.slot-label {
+  margin-top: 4px;
+  font-size: var(--font-xs);
+  color: var(--muted);
+}
+
+/* =======================
+   JSON SECTION
+   ======================= */
+.json-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: var(--space-sm) var(--space-lg) var(--space-md);
+  gap: var(--space-sm);
+}
+
+.json-toggle {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: var(--space-sm) var(--space-md);
+  cursor: pointer;
+  font-size: var(--font-md);
+  color: var(--muted);
+}
+.json-toggle:hover {
+  color: var(--text);
+  border-color: var(--primary);
+}
+
+.json-content {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 0 0 var(--r-sm) var(--r-sm);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: var(--font-sm);
+  padding: var(--space-md);
+  max-height: 300px;
+  overflow-y: auto;
+  margin: 0 var(--space-lg) var(--space-md);
+}
+
+/* =======================
+   PAGE HEADER
+   ======================= */
+.header {
+  text-align: center;
+  margin-bottom: var(--space-xl);
+}
+.header h1 {
+  font-size: var(--font-xl);
+  font-weight: 700;
+  margin: 0 0 var(--space-sm) 0;
+  color: var(--text);
+}
+.header p {
+  font-size: var(--font-lg);
+  color: var(--muted);
+  margin: 0;
+}
+
+/* =======================
+   CONTROLS & FILTERS
+   ======================= */
+.controls {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+.filter-section {
+  display: flex;
+  gap: var(--space-md);
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: var(--space-md);
+}
+.filter-section label {
+  color: var(--text);
+  font-weight: 500;
+  min-width: fit-content;
+}
+.filter-section select {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: var(--space-sm);
+  color: var(--text);
+  min-width: 150px;
+}
+.filter-section select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: var(--focus);
+}
+
+.keyboard-hint {
+  color: var(--muted);
+  font-size: var(--font-base);
+}
+.keyboard-hint kbd {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: var(--font-xs);
+}
+
+/* =======================
+   PAGINATION
+   ======================= */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  margin: var(--space-xl) 0;
+}
+.pagination button {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: var(--space-sm) var(--space-md);
+  color: var(--text);
+  cursor: pointer;
+}
+.pagination button:hover:not(:disabled) {
+  background: var(--surface-2);
+  border-color: var(--primary);
+}
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.pagination span {
+  color: var(--text);
+}
+
+/* =======================
+   LOADING STATE
+   ======================= */
+.loading {
+  text-align: center;
+  padding: var(--space-xl);
+  color: var(--muted);
+}
+
+/* =======================
+   UTILITIES
+   ======================= */
+.help {
+  color: var(--muted);
+  font-size: var(--font-base);
+}
+
+.sticky-filters {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg);
+  padding-bottom: var(--space-sm);
+}
+
+/* =======================
+   RECIPE-SPECIFIC STYLES
+   ======================= */
+
+/* Trimmed Armor Result - Special gradient background */
+.trimmed-armor-result {
+  background: linear-gradient(135deg, var(--info), var(--primary));
+}
+
+/* Effect Result - Special styling for potion/effect recipes */
+.effect-result {
+  background: linear-gradient(135deg, #8b5cf6, #a855f7);
+  border-color: #7c3aed;
+}
+
+.effect-result .mod-overlay {
+  background: rgba(139, 92, 246, 0.8);
+  color: white;
+}
+
+/* Unsupported Recipe Placeholder */
+.unsupported-recipe {
+  text-align: center;
+  padding: var(--space-xl);
+}
+
+/* Additional Layout Classes */
+.crafting-layout {
+  /* Specific styling for crafting layouts if needed */
+}
+
+.shapeless-layout {
+  /* Specific styling for shapeless layouts if needed */
+}
+
+.smithing-layout {
+  /* Specific styling for smithing layouts if needed */
+}
+
+.simple-layout {
+  /* Specific styling for simple layouts if needed */
+}
+
+.crushing-layout {
+  /* Specific styling for crushing layouts with multiple results */
+}
+
+/* Crushing Results Container */
+.crushing-results {
+  display: flex;
+  flex-direction: row;
+  gap: var(--slot-gap);
+  align-items: center;
+}
+
+/* Secondary Result Styling */
+.secondary-result {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border-color: #b45309;
+  opacity: 0.9;
+}
+
+.secondary-result .mod-overlay {
+  background: rgba(245, 158, 11, 0.8);
+  color: white;
+}
